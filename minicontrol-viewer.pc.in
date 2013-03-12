@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+exec_prefix=@EXEC_PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: minicontrol-viewer
+Description: minicontrol viewer supporting library
+Version: @VERSION@
+Requires: evas
+Libs: -L${libdir} -lminicontrol-viewer
+Cflags: -I${includedir}
