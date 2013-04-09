@@ -1,6 +1,6 @@
 Name:       minicontrol
 Summary:    minicontrol library
-Version:    0.0.3
+Version:    0.0.6
 Release:    1
 Group:      TBD
 License:    Flora

@@ -20,6 +20,10 @@
 #include <minicontrol-error.h>
 #include <minicontrol-type.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @defgroup MINICONTROL_MONITOR_LIBRARY minicontrol monitor library
  * @brief This minicontrol monitor library used to manage events triggered by minicontrol provider
@@ -75,5 +79,8 @@ minicontrol_error_e minicontrol_monitor_start(minicontrol_monitor_cb callback,
  */
 minicontrol_error_e minicontrol_monitor_stop(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* _MINICTRL_MONITOR_H_ */
 

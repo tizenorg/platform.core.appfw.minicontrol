@@ -21,6 +21,10 @@
 #include "minicontrol-error.h"
 #include "minicontrol-type.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @defgroup MINICONTROL_PROVIDER_LIBRARY minicontrol provider library
  * @brief This minicontrol provider library used to create evas socket window
@@ -46,5 +50,8 @@ Evas_Object *minicontrol_win_add(const char *name);
  */
 minicontrol_error_e minicontrol_request(Evas_Object *mincontrol, minicontrol_request_e request);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* _MINICTRL_PROVIDER_H_ */
 

@@ -266,6 +266,7 @@ EXPORT_API Evas_Object *minicontrol_win_add(const char *name)
 	if (!elm_win_socket_listen(win, name_inter, 0, EINA_FALSE)) {
 		ERR("Fail to elm win socket listen");
 		evas_object_del(win);
+		free(name_inter);
 		return NULL;
 	}
 

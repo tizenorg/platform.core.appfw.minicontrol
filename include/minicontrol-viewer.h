@@ -19,6 +19,10 @@
 
 #include <Evas.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @defgroup MINICONTROL_VIEWER_LIBRARY minicontrol provider library
  * @brief This minicontrol viewer library used to display minicontrol which created by minicontrol provider
@@ -44,5 +48,8 @@ Evas_Object *minicontrol_viewer_add(Evas_Object *parent, const char *svr_name);
  */
 Evas_Object *minicontrol_viewer_image_object_get(const Evas_Object *obj);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* _MINICTRL_VIEWER_H_ */
 
