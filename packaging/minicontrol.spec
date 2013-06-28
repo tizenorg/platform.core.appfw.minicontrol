@@ -5,6 +5,7 @@ Release:    1
 Group:      TBD
 License:    Flora
 Source0:    %{name}-%{version}.tar.gz
+Source1001: 	minicontrol.manifest
 BuildRequires: pkgconfig(dbus-1)
 BuildRequires: pkgconfig(dbus-glib-1)
 BuildRequires: pkgconfig(elementary)
@@ -17,6 +18,7 @@ Minicontrol library.
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 %package devel
 Summary:    Minicontrol library (devel)
@@ -44,7 +46,7 @@ cp -f LICENSE.Flora %{buildroot}/usr/share/license/%{name}
 %postun -p /sbin/ldconfig
 
 %files
-%manifest minicontrol.manifest
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_libdir}/libminicontrol-provider.so*
 %{_libdir}/libminicontrol-viewer.so*
@@ -52,6 +54,7 @@ cp -f LICENSE.Flora %{buildroot}/usr/share/license/%{name}
 /usr/share/license/%{name}
 
 %files devel
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/%{name}/*.h
 %{_libdir}/pkgconfig/minicontrol-provider.pc
