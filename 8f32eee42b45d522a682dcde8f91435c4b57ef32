@@ -1,0 +1,8 @@
+Change-Id: I8f32eee42b45d522a682dcde8f91435c4b57ef32
+Code-Review+2: Ryan Ware <ware@linux.intel.com>
+Verified+1: Ryan Ware <ware@linux.intel.com>
+Submitted-by: Ryan Ware <ware@linux.intel.com>
+Submitted-at: Mon, 08 Jul 2013 10:08:17 -0700
+Reviewed-on: https://review.tizen.org/gerrit/4414
+Project: apps/core/preloaded/minicontrol
+Branch: refs/heads/tizen
