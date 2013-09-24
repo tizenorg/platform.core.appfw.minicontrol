@@ -1,18 +1,18 @@
-Name:       minicontrol
-Summary:    minicontrol library
-Version:    0.0.6
-Release:    1
-Group:      TBD
-License:    Flora
-Source0:    %{name}-%{version}.tar.gz
-Source1001: 	minicontrol.manifest
-BuildRequires: pkgconfig(dbus-1)
-BuildRequires: pkgconfig(dbus-glib-1)
-BuildRequires: pkgconfig(elementary)
-BuildRequires: pkgconfig(evas)
-BuildRequires: pkgconfig(ecore-evas)
-BuildRequires: pkgconfig(dlog)
-BuildRequires: cmake
+Name:           minicontrol
+Version:        0.0.6
+Release:        1
+License:        Flora
+Summary:        Minicontrol Library
+Group:          Applications/Core Applications
+Source0:        %{name}-%{version}.tar.gz
+Source1001:     minicontrol.manifest
+BuildRequires:  cmake
+BuildRequires:  pkgconfig(dbus-1)
+BuildRequires:  pkgconfig(dbus-glib-1)
+BuildRequires:  pkgconfig(dlog)
+BuildRequires:  pkgconfig(ecore-evas)
+BuildRequires:  pkgconfig(elementary)
+BuildRequires:  pkgconfig(evas)
 %description
 Minicontrol library.
 
@@ -21,37 +21,32 @@ Minicontrol library.
 cp %{SOURCE1001} .
 
 %package devel
-Summary:    Minicontrol library (devel)
-Group:      Development/Libraries
-Requires:   %{name} = %{version}-%{release}
+Summary:        Minicontrol library (devel)
+Requires:       %{name} = %{version}
 
 %description devel
 Minicontrol library (devel).
 
 %build
-export LDFLAGS+="-Wl,--rpath=%{_libdir} -Wl,--as-needed"
+CFLAGS="$CFLAGS -fPIC"
 %cmake .
-make %{?jobs:-j%jobs}
+make %{?_smp_mflags}
 
 %install
 %make_install
 
-mkdir -p %{buildroot}/usr/share/license
-cp -f LICENSE.Flora %{buildroot}/usr/share/license/%{name}
 
-
-%post
-/sbin/ldconfig
+%post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
 %files
 %manifest %{name}.manifest
+%license LICENSE.Flora
 %defattr(-,root,root,-)
 %{_libdir}/libminicontrol-provider.so*
 %{_libdir}/libminicontrol-viewer.so*
 %{_libdir}/libminicontrol-monitor.so*
-/usr/share/license/%{name}
 
 %files devel
 %manifest %{name}.manifest
