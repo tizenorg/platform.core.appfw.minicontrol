@@ -1,0 +1,8 @@
+Code-Review+1: Ryan Ware <ware@linux.intel.com>
+Code-Review+2: Anas Nashif <anas.nashif@intel.com>
+Verified+1: Anas Nashif <anas.nashif@intel.com>
+Submitted-by: Anas Nashif <anas.nashif@intel.com>
+Submitted-at: Tue, 24 Sep 2013 17:23:06 -0700
+Reviewed-on: https://review.tizen.org/gerrit/10222
+Project: apps/core/preloaded/minicontrol
+Branch: refs/heads/tizen
