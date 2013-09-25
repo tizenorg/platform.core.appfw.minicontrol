@@ -28,7 +28,6 @@ Requires:       %{name} = %{version}
 Minicontrol library (devel).
 
 %build
-CFLAGS="$CFLAGS -fPIC"
 %cmake .
 make %{?_smp_mflags}
 
