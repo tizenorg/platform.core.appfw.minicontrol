@@ -14,30 +14,22 @@
  * limitations under the License.
  */
 
-#ifndef _MINICTRL_MONITOR_H_
-#define _MINICTRL_MONITOR_H_
+#ifndef _MINICONTROL_PROVIDER_INTERNAL_H_
+#define _MINICONTROL_PROVIDER_INTERNAL_H_
 
-#include <minicontrol-error.h>
-#include <minicontrol-type.h>
-#include <minicontrol-internal.h>
+#include <Evas.h>
+#include "minicontrol-error.h"
+#include "minicontrol-type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef void (*minicontrol_monitor_cb) (minicontrol_action_e action,
-					const char *name,
-					unsigned int width,
-					unsigned int height,
-					minicontrol_priority_e priority,
-					void *data);
+Evas_Object *minicontrol_win_add(const char *name) DEPRECATED;
 
-int minicontrol_monitor_start(minicontrol_monitor_cb callback, void *data) DEPRECATED;
-
-int minicontrol_monitor_stop(void) DEPRECATED;
+int minicontrol_request(Evas_Object *mincontrol, minicontrol_request_e request) DEPRECATED;
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _MINICTRL_MONITOR_H_ */
-
+#endif /* _MINICONTROL_PROVIDER_INTERNAL_H_ */

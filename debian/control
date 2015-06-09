@@ -1,0 +1,25 @@
+Source: minicontrol
+Section: libs
+Priority: optional
+Maintainer: Jeonghoon Park <jh1979.park@samsung.com>, Young-joo Park <yjoo93.park@samsung.com>
+Build-Depends: debhelper (>= 5), libecore-dev, libevas-dev, dlog-dev, libaul-1-dev, libelm-dev, libdbus-1-dev, libdbus-glib-1-dev
+Standards-Version: 3.7.2
+
+Package: libminicontrol
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Minicontrol supporting library (shared object)
+
+Package: libminicontrol-dev
+Section: libs
+Architecture: any
+Depends: libminicontrol (= ${Source-Version})
+Description: Minicontrol supporting library (development)
+
+Package: libminicontrol-dbg
+Section: debug
+Architecture: any
+Depends: ${misc:Depends}, libminicontrol (= ${Source-Version})
+Description: Minicontrol supporting library (unstripped)
+

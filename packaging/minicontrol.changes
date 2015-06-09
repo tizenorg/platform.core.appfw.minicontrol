@@ -1,7 +1,0 @@
-* Tue Sep 24 2013 Anas Nashif <anas.nashif@intel.com> accepted/tizen/20130912.195945@869fa8a
-- fixed packaging
-- resetting manifest requested domain to floor
-- Updated the license and boilerplate
-- updated license file
-- sync with private git
-

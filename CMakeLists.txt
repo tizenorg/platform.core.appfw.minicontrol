@@ -4,7 +4,7 @@ PROJECT(minicontrol C)
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 SET(EXEC_PREFIX "\${prefix}")
 SET(PROJECT_NAME "${PROJECT_NAME}")
-SET(LIBDIR "\${exec_prefix}/lib")
+SET(LIBDIR ${LIB_INSTALL_DIR})
 SET(INCLUDEDIR "\${prefix}/include/${PROJECT_NAME}")
 SET(VERSION_MAJOR 0)
 SET(VERSION "${VERSION_MAJOR}.0.1")
@@ -14,9 +14,12 @@ SET(CMAKE_SKIP_BUILD_RPATH true)
 SET(INSTALL_HEADERS
 	minicontrol-error.h
 	minicontrol-type.h
+	minicontrol-internal.h
 	minicontrol-monitor.h
 	minicontrol-provider.h
+	minicontrol-provider-internal.h
 	minicontrol-viewer.h
+	minicontrol-viewer-internal.h
 )
 
 SET(SUBMODULES
@@ -34,13 +37,14 @@ pkg_check_modules(pkgs REQUIRED
 	ecore-evas
 	dbus-1
 	dbus-glib-1
+	bundle
 )
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
 ENDFOREACH(flag)
 
-SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden -g -Wall")
+SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden -g -Wall -fPIC ")
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 

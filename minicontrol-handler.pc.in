@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+exec_prefix=@EXEC_PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: minicontrol-handler
+Description: minicontrol handler supporting library
+Version: @VERSION@
+Requires: evas
+Libs: -L${libdir} -lminicontrol-handler
+Cflags: -I${includedir}
