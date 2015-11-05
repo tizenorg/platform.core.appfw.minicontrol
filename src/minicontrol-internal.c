@@ -138,7 +138,7 @@ release_n_return:
 
 }
 
-int _minictrl_send_event(const char *signal_name, const char *provider_app_id, int event, bundle *signal_arg)
+int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, int event, bundle *signal_arg)
 {
 	DBusConnection *connection = NULL;
 	DBusMessage *message = NULL;
@@ -148,7 +148,7 @@ int _minictrl_send_event(const char *signal_name, const char *provider_app_id, i
 	unsigned int serialized_arg_length = 0;
 	int ret = MINICONTROL_ERROR_NONE;
 
-	if (provider_app_id == NULL) {
+	if (minicontrol_name == NULL) {
 		ERR("Invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
@@ -182,14 +182,14 @@ int _minictrl_send_event(const char *signal_name, const char *provider_app_id, i
 	}
 
 	dbus_ret = dbus_message_append_args(message,
-			DBUS_TYPE_STRING, &provider_app_id,
+			DBUS_TYPE_STRING, &minicontrol_name,
 			DBUS_TYPE_INT32,  &event,
 			DBUS_TYPE_STRING, &serialized_arg,
 			DBUS_TYPE_UINT32,  &serialized_arg_length,
 			DBUS_TYPE_INVALID);
 
 	if (!dbus_ret) {
-		ERR("fail to append arguments to dbus message : [%s][%d]", provider_app_id, event);
+		ERR("fail to append arguments to dbus message : [%s][%d]", minicontrol_name, event);
 		ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
 		goto release_n_return;
 	}
@@ -197,7 +197,7 @@ int _minictrl_send_event(const char *signal_name, const char *provider_app_id, i
 	dbus_ret = dbus_connection_send(connection, message, NULL);
 
 	if (!dbus_ret) {
-		ERR("fail to send dbus message : %s", provider_app_id);
+		ERR("fail to send dbus message : %s", minicontrol_name);
 		ret = MINICONTROL_ERROR_IPC_FAILURE;
 		goto release_n_return;
 	}

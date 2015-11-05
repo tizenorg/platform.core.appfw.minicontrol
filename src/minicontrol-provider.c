@@ -85,7 +85,7 @@ static void _sig_to_provider_handler_cb(void *data, DBusMessage *msg)
 {
 	struct _minicontrol_provider *pd;
 	DBusError err;
-	char *provider_app_id = NULL;
+	char *minicontrol_name = NULL;
 	minicontrol_viewer_event_e event;
 	dbus_bool_t dbus_ret;
 	bundle *event_arg_bundle = NULL;
@@ -102,7 +102,7 @@ static void _sig_to_provider_handler_cb(void *data, DBusMessage *msg)
 	dbus_error_init(&err); /* Does not allocate any memory. the error only needs to be freed if it is set at some point. */
 
 	dbus_ret = dbus_message_get_args(msg, &err,
-				DBUS_TYPE_STRING, &provider_app_id,
+				DBUS_TYPE_STRING, &minicontrol_name,
 				DBUS_TYPE_INT32,  &event,
 				DBUS_TYPE_STRING, &serialized_arg,
 				DBUS_TYPE_UINT32, &serialized_arg_length,
@@ -114,15 +114,26 @@ static void _sig_to_provider_handler_cb(void *data, DBusMessage *msg)
 		return;
 	}
 
-	event_arg_bundle = bundle_decode(serialized_arg, serialized_arg_length);
+	INFO("minicontrol_name[%s] event[%d] pd->name[%s]", minicontrol_name, event, pd->name);
 
-	if (event_arg_bundle == NULL) {
-		ERR("fail to deserialize arguments");
-		return;
+	if (minicontrol_name && pd->name && strcmp(minicontrol_name, pd->name) == 0) {
+		event_arg_bundle = bundle_decode(serialized_arg, serialized_arg_length);
+		/* event argument can be null */
+
+		if (event == MINICONTROL_VIEWER_EVENT_SHOW) {
+			Evas_Coord width;
+			Evas_Coord height;
+			evas_object_geometry_get (pd->obj, NULL, NULL, &width, &height);
+			INFO("width[%d] height[%d]", width, height);
+			_minictrl_provider_message_send(MINICONTROL_EVENT_RESIZE, pd->name, width, height, 0);
+		}
+
+		if (pd->event_callback)
+			pd->event_callback(event, event_arg_bundle);
+
+		if (event_arg_bundle)
+			bundle_free(event_arg_bundle);
 	}
-
-	if (pd->event_callback)
-		pd->event_callback(event, event_arg_bundle);
 }
 
 
@@ -171,6 +182,7 @@ static void _access_changed_cb(void *data, Evas_Object *obj, void *event_info)
 
 EXPORT_API Evas_Object* minicontrol_create_window(const char *name, minicontrol_target_viewer_e target_viewer, minicontrol_event_cb event_callback)
 {
+	int err_from_elm;
 	Evas_Object *win = NULL;
 	char *name_inter = NULL;
 	struct _minicontrol_provider *pd;
@@ -207,8 +219,9 @@ EXPORT_API Evas_Object* minicontrol_create_window(const char *name, minicontrol_
 		return NULL;
 	}
 
-	if (!elm_win_socket_listen(win, name_inter, 0, EINA_TRUE)) {
-		ERR("Fail to elm win socket listen");
+	err_from_elm = elm_win_socket_listen(win, name_inter, 0, EINA_TRUE);
+	if (!err_from_elm) {
+		ERR("Fail to elm win socket listen [%d]", err_from_elm);
 		set_last_result(MINICONTROL_ERROR_ELM_FAILURE);
 		evas_object_del(win);
 		free(name_inter);

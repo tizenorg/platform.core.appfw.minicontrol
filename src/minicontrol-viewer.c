@@ -33,16 +33,16 @@ struct _minicontrol_viewer {
 
 static struct _minicontrol_viewer *g_minicontrol_viewer_h = NULL;
 
-EXPORT_API int minicontrol_viewer_send_event(const char *provider_app_id, minicontrol_viewer_event_e event, bundle *event_arg)
+EXPORT_API int minicontrol_viewer_send_event(const char *minicontrol_name, minicontrol_viewer_event_e event, bundle *event_arg)
 {
 	int ret = MINICONTROL_ERROR_NONE;
 
-	if (provider_app_id == NULL) {
+	if (minicontrol_name == NULL) {
 		ERR("appid is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
 
-	ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_PROVIDER, provider_app_id, event, event_arg);
+	ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_PROVIDER, minicontrol_name, event, event_arg);
 
 	return ret;
 }
@@ -51,7 +51,7 @@ EXPORT_API int minicontrol_viewer_send_event(const char *provider_app_id, minico
 static void _sig_to_viewer_handler_cb(void *data, DBusMessage *msg)
 {
 	DBusError err;
-	char *provider_app_id = NULL;
+	char *minicontrol_name = NULL;
 	minicontrol_event_e event;
 	dbus_bool_t dbus_ret;
 	bundle *event_arg_bundle = NULL;
@@ -61,7 +61,7 @@ static void _sig_to_viewer_handler_cb(void *data, DBusMessage *msg)
 	dbus_error_init(&err); /* Does not allocate any memory. the error only needs to be freed if it is set at some point. */
 
 	dbus_ret = dbus_message_get_args(msg, &err,
-				DBUS_TYPE_STRING, &provider_app_id,
+				DBUS_TYPE_STRING, &minicontrol_name,
 				DBUS_TYPE_INT32, &event,
 				DBUS_TYPE_STRING, &serialized_arg,
 				DBUS_TYPE_UINT32, &serialized_arg_length,
@@ -83,7 +83,7 @@ static void _sig_to_viewer_handler_cb(void *data, DBusMessage *msg)
 	}
 
 	if (g_minicontrol_viewer_h->callback)
-		g_minicontrol_viewer_h->callback(event, provider_app_id, event_arg_bundle, g_minicontrol_viewer_h->user_data);
+		g_minicontrol_viewer_h->callback(event, minicontrol_name, event_arg_bundle, g_minicontrol_viewer_h->user_data);
 
 	bundle_free(event_arg_bundle);
 	dbus_error_free(&err);
@@ -153,25 +153,30 @@ static void _minictrl_plug_server_del(Ecore_Evas *ee)
 
 	INFO("server - %s is deleted", minicontrol_name);
 
-	/* send message to remve plug */
+	/* To avoid retrying to free minicontrol_name again, set MINICTRL_PLUG_DATA_KEY as NULL */
+	ecore_evas_data_set(ee, MINICTRL_PLUG_DATA_KEY, NULL);
+
+	/* send message to remove plug */
 	_minictrl_provider_message_send(MINICONTROL_EVENT_STOP, minicontrol_name, 0, 0, MINICONTROL_PRIORITY_LOW);
 	_minictrl_provider_proc_send(MINICONTROL_DBUS_PROC_INCLUDE);
+	free(minicontrol_name);
 }
 
 static void _minictrl_plug_del(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
-	Ecore_Evas *ee = NULL;
+	Ecore_Evas *ee = data;
 	char *minicontrol_name = NULL;
 
-	ee = ecore_evas_ecore_evas_get(evas_object_evas_get(obj));
 	if (!ee)
 		return;
 
 	minicontrol_name = ecore_evas_data_get(ee, MINICTRL_PLUG_DATA_KEY);
-	if (minicontrol_name)
-		free(minicontrol_name);
 
-	ecore_evas_data_set(ee, MINICTRL_PLUG_DATA_KEY, NULL);
+	if (minicontrol_name) {
+		/* Sending an event 'MINICONTROL_EVENT_REQUEST_HIDE' should be done by minicontrol viewer manually */
+		free(minicontrol_name);
+		ecore_evas_data_set(ee, MINICTRL_PLUG_DATA_KEY, NULL);
+	}
 }
 
 EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent, const char *minicontrol_name)
@@ -207,7 +212,7 @@ EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent, const char *
 	ecore_evas_data_set(ee, MINICTRL_PLUG_DATA_KEY, strdup(minicontrol_name));
 	ecore_evas_callback_delete_request_set(ee, _minictrl_plug_server_del);
 
-	evas_object_event_callback_add(plug, EVAS_CALLBACK_DEL,	_minictrl_plug_del, plug);
+	evas_object_event_callback_add(plug, EVAS_CALLBACK_DEL,	_minictrl_plug_del, ee);
 
 	return plug;
 }
@@ -217,14 +222,14 @@ EXPORT_API Evas_Object *minicontrol_viewer_image_object_get(const Evas_Object *o
 	return elm_plug_image_object_get(obj);
 }
 
-EXPORT_API int minicontrol_viewer_request(const char *appid, minicontrol_request_e request, int value)
+EXPORT_API int minicontrol_viewer_request(const char *minicontrol_name, minicontrol_request_e request, int value)
 {
 	int ret = MINICONTROL_ERROR_NONE;
 	minicontrol_viewer_event_e event  = 0;
 	bundle *event_arg_bundle = NULL;
 	char bundle_value_buffer[BUNDLE_BUFFER_LENGTH] = { 0, };
 
-	if (appid == NULL) {
+	if (minicontrol_name == NULL) {
 		ERR("appid is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
@@ -255,7 +260,7 @@ EXPORT_API int minicontrol_viewer_request(const char *appid, minicontrol_request
 		goto out;
 	}
 
-	_minictrl_send_event(MINICTRL_DBUS_SIG_TO_PROVIDER, appid, event, event_arg_bundle);
+	_minictrl_send_event(MINICTRL_DBUS_SIG_TO_PROVIDER, minicontrol_name, event, event_arg_bundle);
 
 out:
 	if (event_arg_bundle)
