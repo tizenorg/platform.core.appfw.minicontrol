@@ -50,7 +50,7 @@ Evas_Object *minicontrol_viewer_add(Evas_Object *parent, const char *minicontrol
 /**
  * @brief Sends a event to the provider.
  * @since_tizen 2.4
- * @param[in] provider_app_id Application id of the minicontrol provider
+ * @param[in] minicontrol_name The name of the minicontrol window
  * @param[in] event Type of the event
  * @param[in] event_arg A bundle of arguments
  * @return #MINICONTROL_ERROR_NONE on success,
@@ -58,7 +58,7 @@ Evas_Object *minicontrol_viewer_add(Evas_Object *parent, const char *minicontrol
  * @retval #MINICONTROL_ERROR_INVALID_PARAMETER  Invalid argument
  * @see #minicontrol_viewer_event_e
  */
-int minicontrol_viewer_send_event(const char *provider_app_id, minicontrol_viewer_event_e event, bundle *event_arg);
+int minicontrol_viewer_send_event(const char *minicontrol_name, minicontrol_viewer_event_e event, bundle *event_arg);
 
 /**
  * @brief Called when a event comes from the provider

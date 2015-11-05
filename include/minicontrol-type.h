@@ -77,6 +77,18 @@
 <TD></TD><TD></TD>
 <TD></TD><TD></TD>
 </TR>
+<TR>
+<TD>MINICONTROL_VIEWER_EVENT_SHOW</TD><TD>viewer</TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+</TR>
+<TR>
+<TD>MINICONTROL_VIEWER_EVENT_HIDE</TD><TD>viewer</TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+<TD></TD><TD></TD>
+</TR>
 </TABLE>
 */
 
@@ -108,6 +120,8 @@ typedef enum {
  */
 typedef enum {
 	MINICONTROL_VIEWER_EVENT_REPORT_ANGLE    = MINICONTROL_EVENT_REPORT_ANGLE,  /**< Reports the current angle of the minicontrol viewer. Required argument : Angle of minicontrol viewer, Bundle Key : "angle", Bundle Value Type : string.*/
+	MINICONTROL_VIEWER_EVENT_SHOW            = 201, /**< The minicontrol viewer is shown. Required argument : NULL.*/
+	MINICONTROL_VIEWER_EVENT_HIDE            = 202, /**< The minicontrol viewer is hidden. Required argument : NULL.*/
 } minicontrol_viewer_event_e;
 
 /**
@@ -115,9 +129,9 @@ typedef enum {
  * @since_tizen 2.4
  */
 typedef enum {
-	MINICONTROL_TARGET_VIEWER_QUICK_PANEL             = 0x0001,   /* Request to place the minicontrol on the quickpanel */
-	MINICONTROL_TARGET_VIEWER_STOCK_LOCK_SCREEN       = 0x0002,   /* Request to place the minicontrol on the stock lock screen */
-	MINICONTROL_TARGET_VIEWER_CUSTOM_LOCK_SCREEN      = 0x0004,   /* Request to place the minicontrol on a lock screen replacement application */
+	MINICONTROL_TARGET_VIEWER_QUICK_PANEL             = 0x0001,   /**< Request to place the minicontrol on the quickpanel */
+	MINICONTROL_TARGET_VIEWER_STOCK_LOCK_SCREEN       = 0x0002,   /**< Request to place the minicontrol on the stock lock screen */
+	MINICONTROL_TARGET_VIEWER_CUSTOM_LOCK_SCREEN      = 0x0004,   /**< Request to place the minicontrol on a lock screen replacement application */
 } minicontrol_target_viewer_e;
 
 /**

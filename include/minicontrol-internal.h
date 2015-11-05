@@ -77,6 +77,10 @@ typedef enum _minicontrol_action {
 	MINICONTROL_ACTION_REQUEST,    /**< the viewer of the minicontrol object is asked to do something */
 } minicontrol_action_e;
 
+typedef enum {
+	MINICONTROL_EVENT_REQUEST_LOCK = 1001, /**< A minicontrol object should not be removed by user */
+} minicontrol_internal_provider_event_e;
+
 typedef struct _minictrl_sig_handle minictrl_sig_handle;
 
 int _minictrl_provider_message_send(int event, const char *minicontrol_name, unsigned int witdh, unsigned int height, minicontrol_priority_e priority);
@@ -92,7 +96,7 @@ void _minictrl_dbus_sig_handle_dettach(minictrl_sig_handle *handle);
 int _minictrl_provider_proc_send(int type);
 
 /* new */
-int _minictrl_send_event(const char *signal_name, const char *provider_app_id, int event, bundle *signal_arg);
+int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, int event, bundle *signal_arg);
 
 #endif /* _MINICTRL_INTERNAL_H_ */
 
