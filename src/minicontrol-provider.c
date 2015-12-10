@@ -29,7 +29,7 @@
 #define MINICTRL_DATA_KEY "__minictrl_data_internal"
 
 enum {
-	MINICTRL_STATE_READY =0,
+	MINICTRL_STATE_READY = 0,
 	MINICTRL_STATE_RUNNING,
 };
 
@@ -123,7 +123,7 @@ static void _sig_to_provider_handler_cb(void *data, DBusMessage *msg)
 		if (event == MINICONTROL_VIEWER_EVENT_SHOW) {
 			Evas_Coord width;
 			Evas_Coord height;
-			evas_object_geometry_get (pd->obj, NULL, NULL, &width, &height);
+			evas_object_geometry_get(pd->obj, NULL, NULL, &width, &height);
 			INFO("width[%d] height[%d]", width, height);
 			_minictrl_provider_message_send(MINICONTROL_EVENT_RESIZE, pd->name, width, height, 0);
 		}
@@ -170,8 +170,7 @@ static void _access_changed_cb(void *data, Evas_Object *obj, void *event_info)
 			/* TODO : Check this API is supported
 			ecore_evas_extn_socket_events_block_set(ee, EINA_TRUE);
 			 */
-		}
-		else {
+		} else {
 			/* TODO : Check this API is supported
 			ecore_evas_extn_socket_events_block_set(ee, EINA_FALSE);
 			 */
@@ -242,7 +241,7 @@ EXPORT_API Evas_Object* minicontrol_create_window(const char *name, minicontrol_
 	pd->state = MINICTRL_STATE_READY;
 	pd->obj = win;
 
-	evas_object_data_set(win ,MINICTRL_DATA_KEY,pd);
+	evas_object_data_set(win, MINICTRL_DATA_KEY, pd);
 
 	elm_win_autodel_set(win, EINA_TRUE);
 
@@ -453,7 +452,7 @@ EXPORT_API Evas_Object *minicontrol_win_add(const char *name)
 	pd->state = MINICTRL_STATE_READY;
 	pd->obj = win;
 
-	evas_object_data_set(win ,MINICTRL_DATA_KEY,pd);
+	evas_object_data_set(win, MINICTRL_DATA_KEY, pd);
 
 	elm_win_autodel_set(win, EINA_TRUE);
 
@@ -491,24 +490,24 @@ EXPORT_API int minicontrol_request(Evas_Object *mincontrol, minicontrol_request_
 	}
 
 	if (pd->state == MINICTRL_STATE_RUNNING) {
-		switch(request) {
-		case MINICONTROL_REQ_HIDE_VIEWER :
+		switch (request) {
+		case MINICONTROL_REQ_HIDE_VIEWER:
 			event = MINICONTROL_EVENT_REQUEST_HIDE;
 			break;
 
-		case MINICONTROL_REQ_REPORT_VIEWER_ANGLE :
+		case MINICONTROL_REQ_REPORT_VIEWER_ANGLE:
 			event = MINICONTROL_EVENT_REQUEST_ANGLE;
 			break;
 
-		case MINICONTROL_REQ_FREEZE_SCROLL_VIEWER :
-		case MINICONTROL_REQ_UNFREEZE_SCROLL_VIEWER :
-		case MINICONTROL_REQ_ROTATE_PROVIDER :
+		case MINICONTROL_REQ_FREEZE_SCROLL_VIEWER:
+		case MINICONTROL_REQ_UNFREEZE_SCROLL_VIEWER:
+		case MINICONTROL_REQ_ROTATE_PROVIDER:
 			WARN("Could be not supported [%d]", request);
 			event = request;
 			break;
 
-		case MINICONTROL_REQ_NONE :
-		default :
+		case MINICONTROL_REQ_NONE:
+		default:
 			ERR("Not supported request[%d]", request);
 			ret = MINICONTROL_ERROR_NOT_SUPPORTED;
 			goto out;

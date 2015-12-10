@@ -58,7 +58,7 @@ static void _sig_to_viewer_handler_cb(minicontrol_event_e event, const char *min
 	minicontrol_priority_e priority = 0;
 	size_t n_size;
 
-	switch(event) {
+	switch (event) {
 	case MINICONTROL_EVENT_START:
 		action = MINICONTROL_ACTION_START;
 		break;
@@ -87,8 +87,7 @@ static void _sig_to_viewer_handler_cb(minicontrol_event_e event, const char *min
 		bundle_get_byte(event_arg, "height", (void*)&height, &n_size);
 		bundle_get_byte(event_arg, "priority", (void*)&priority_from_signal, &n_size);
 		priority = _int_to_priority(priority_from_signal);
-	}
-	else {
+	} else {
 		priority = MINICONTROL_PRIORITY_LOW;
 	}
 

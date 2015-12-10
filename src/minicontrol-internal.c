@@ -175,8 +175,7 @@ int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, 
 			ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
 			goto release_n_return;
 		}
-	}
-	else {
+	} else {
 		serialized_arg = (bundle_raw*)strdup("");
 		serialized_arg_length = 0;
 	}

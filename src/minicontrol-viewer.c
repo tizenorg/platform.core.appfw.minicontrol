@@ -234,7 +234,7 @@ EXPORT_API int minicontrol_viewer_request(const char *minicontrol_name, minicont
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
 
-	switch(request) {
+	switch (request) {
 	case MINICONTROL_REQ_ROTATE_PROVIDER: {
 		event = MINICONTROL_EVENT_REPORT_ANGLE;
 		event_arg_bundle = bundle_create();
@@ -255,7 +255,7 @@ EXPORT_API int minicontrol_viewer_request(const char *minicontrol_name, minicont
 	case MINICONTROL_REQ_FREEZE_SCROLL_VIEWER:
 	case MINICONTROL_REQ_UNFREEZE_SCROLL_VIEWER:
 	case MINICONTROL_REQ_REPORT_VIEWER_ANGLE:
-	default :
+	default:
 		ret = MINICONTROL_ERROR_INVALID_PARAMETER;
 		goto out;
 	}
