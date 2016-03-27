@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2013 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -279,9 +279,8 @@ EXPORT_API int minicontrol_send_event(Evas_Object *mincontrol, minicontrol_provi
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
 
-	if (pd->state == MINICTRL_STATE_RUNNING) {
+	if (pd->state == MINICTRL_STATE_RUNNING)
 		ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER, pd->name, event, event_arg);
-	}
 
 	return ret;
 }

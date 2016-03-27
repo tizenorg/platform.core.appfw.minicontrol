@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2013 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@
 #define MINICTRL_DBUS_PATH "/org/tizen/minicontrol"
 #define MINICTRL_DBUS_INTERFACE "org.tizen.minicontrol.signal"
 
-#define PROC_DBUS_OBJECT 	"/Org/Tizen/ResourceD/Process"
-#define PROC_DBUS_INTERFACE 	"org.tizen.resourced.process"
-#define PROC_DBUS_METHOD 	"ProcExclude"
+#define PROC_DBUS_OBJECT	"/Org/Tizen/ResourceD/Process"
+#define PROC_DBUS_INTERFACE	"org.tizen.resourced.process"
+#define PROC_DBUS_METHOD	"ProcExclude"
 #define PROC_DBUS_EXCLUDE	"exclude"
 #define PROC_DBUS_INCLUDE	"include"
 
@@ -111,9 +111,9 @@ int _minictrl_provider_proc_send(int type)
 		ret = MINICONTROL_ERROR_IPC_FAILURE;
 		goto release_n_return;
 	}
-	msg = dbus_message_new_signal(PROC_DBUS_OBJECT, // object name of the signal
-			    PROC_DBUS_INTERFACE, // interface name of the signal
-			    PROC_DBUS_METHOD); // name of the signal
+	msg = dbus_message_new_signal(PROC_DBUS_OBJECT, /* object name of the signal */
+			    PROC_DBUS_INTERFACE, /* interface name of the signal */
+			    PROC_DBUS_METHOD); /* name of the signal */
 	if (!msg) {
 		ERR("ERR Could not create DBus Message");
 		goto release_n_return;
@@ -135,7 +135,6 @@ release_n_return:
 		dbus_connection_unref(conn);
 
 	return ret;
-
 }
 
 int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, int event, bundle *signal_arg)
