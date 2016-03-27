@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2013 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -83,9 +83,9 @@ static void _sig_to_viewer_handler_cb(minicontrol_event_e event, const char *min
 	}
 
 	if (action == MINICONTROL_ACTION_START || action == MINICONTROL_ACTION_RESIZE || action == MINICONTROL_ACTION_REQUEST) {
-		bundle_get_byte(event_arg, "width", (void*)&width, &n_size);
-		bundle_get_byte(event_arg, "height", (void*)&height, &n_size);
-		bundle_get_byte(event_arg, "priority", (void*)&priority_from_signal, &n_size);
+		bundle_get_byte(event_arg, "width", (void *)&width, &n_size);
+		bundle_get_byte(event_arg, "height", (void *)&height, &n_size);
+		bundle_get_byte(event_arg, "priority", (void *)&priority_from_signal, &n_size);
 		priority = _int_to_priority(priority_from_signal);
 	} else {
 		priority = MINICONTROL_PRIORITY_LOW;
@@ -132,3 +132,4 @@ EXPORT_API minicontrol_error_e minicontrol_monitor_stop(void)
 
 	return MINICONTROL_ERROR_NONE;
 }
+

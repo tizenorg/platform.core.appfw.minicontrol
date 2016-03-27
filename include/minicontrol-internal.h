@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2013 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ int _minictrl_provider_message_send(int event, const char *minicontrol_name, uns
 int _minictrl_viewer_req_message_send(void);
 
 minictrl_sig_handle *_minictrl_dbus_sig_handle_attach(const char *signal,
-				void (*callback) (void *data, DBusMessage *msg),
+				void (*callback)(void *data, DBusMessage *msg),
 				void *data);
 
 void _minictrl_dbus_sig_handle_dettach(minictrl_sig_handle *handle);

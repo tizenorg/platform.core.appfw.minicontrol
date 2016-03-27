@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2013 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@
 #define MINICTRL_DBUS_PATH "/org/tizen/minicontrol"
 #define MINICTRL_DBUS_INTERFACE "org.tizen.minicontrol.signal"
 
-#define PROC_DBUS_OBJECT 	"/Org/Tizen/ResourceD/Process"
-#define PROC_DBUS_INTERFACE 	"org.tizen.resourced.process"
-#define PROC_DBUS_METHOD 	"ProcExclude"
+#define PROC_DBUS_OBJECT	"/Org/Tizen/ResourceD/Process"
+#define PROC_DBUS_INTERFACE	"org.tizen.resourced.process"
+#define PROC_DBUS_METHOD	"ProcExclude"
 #define PROC_DBUS_EXCLUDE	"exclude"
 #define PROC_DBUS_INCLUDE	"include"
 
@@ -89,8 +89,8 @@ release_n_return:
 int _minictrl_provider_proc_send(int type)
 {
 	DBusError err;
-	DBusConnection* conn = NULL;
-	DBusMessage* msg = NULL;
+	DBusConnection *conn = NULL;
+	DBusMessage *msg = NULL;
 	int ret = -1;
 	int pid = getpid();
 	dbus_uint32_t serial = 0;
@@ -111,9 +111,9 @@ int _minictrl_provider_proc_send(int type)
 		ret = MINICONTROL_ERROR_IPC_FAILURE;
 		goto release_n_return;
 	}
-	msg = dbus_message_new_signal(PROC_DBUS_OBJECT, // object name of the signal
-			    PROC_DBUS_INTERFACE, // interface name of the signal
-			    PROC_DBUS_METHOD); // name of the signal
+	msg = dbus_message_new_signal(PROC_DBUS_OBJECT, /* object name of the signal */
+			    PROC_DBUS_INTERFACE, /* interface name of the signal */
+			    PROC_DBUS_METHOD); /* name of the signal */
 	if (!msg) {
 		ERR("ERR Could not create DBus Message");
 		goto release_n_return;
@@ -135,7 +135,6 @@ release_n_return:
 		dbus_connection_unref(conn);
 
 	return ret;
-
 }
 
 int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, int event, bundle *signal_arg)
@@ -170,13 +169,13 @@ int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, 
 	}
 
 	if (signal_arg != NULL) {
-		if (bundle_encode(signal_arg, &serialized_arg, (int*)&serialized_arg_length) != BUNDLE_ERROR_NONE) {
+		if (bundle_encode(signal_arg, &serialized_arg, (int *)&serialized_arg_length) != BUNDLE_ERROR_NONE) {
 			ERR("fail to serialize bundle argument");
 			ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
 			goto release_n_return;
 		}
 	} else {
-		serialized_arg = (bundle_raw*)strdup("");
+		serialized_arg = (bundle_raw *)strdup("");
 		serialized_arg_length = 0;
 	}
 
@@ -236,9 +235,9 @@ int _minictrl_provider_message_send(int event, const char *minicontrol_name, uns
 	snprintf(bundle_value_buffer, BUNDLE_BUFFER_LENGTH, "%s", minicontrol_name);
 
 	bundle_add_str(event_arg_bundle, "minicontrol_name", bundle_value_buffer);
-	bundle_add_byte(event_arg_bundle, "width", (void*)&witdh, sizeof(int));
-	bundle_add_byte(event_arg_bundle, "height", (void*)&height, sizeof(int));
-	bundle_add_byte(event_arg_bundle, "priority", (void*)&priority, sizeof(int));
+	bundle_add_byte(event_arg_bundle, "width", (void *)&witdh, sizeof(int));
+	bundle_add_byte(event_arg_bundle, "height", (void *)&height, sizeof(int));
+	bundle_add_byte(event_arg_bundle, "priority", (void *)&priority, sizeof(int));
 
 	_minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER, minicontrol_name, event, event_arg_bundle);
 

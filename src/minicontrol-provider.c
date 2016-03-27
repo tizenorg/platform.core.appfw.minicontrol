@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2013 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -179,7 +179,7 @@ static void _access_changed_cb(void *data, Evas_Object *obj, void *event_info)
 }
 
 
-EXPORT_API Evas_Object* minicontrol_create_window(const char *name, minicontrol_target_viewer_e target_viewer, minicontrol_event_cb event_callback)
+EXPORT_API Evas_Object *minicontrol_create_window(const char *name, minicontrol_target_viewer_e target_viewer, minicontrol_event_cb event_callback)
 {
 	int err_from_elm;
 	Evas_Object *win = NULL;
@@ -279,9 +279,8 @@ EXPORT_API int minicontrol_send_event(Evas_Object *mincontrol, minicontrol_provi
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
 
-	if (pd->state == MINICTRL_STATE_RUNNING) {
+	if (pd->state == MINICTRL_STATE_RUNNING)
 		ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER, pd->name, event, event_arg);
-	}
 
 	return ret;
 }

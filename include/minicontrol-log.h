@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2013 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -29,45 +29,45 @@
 
 #define LOG_TAG "MINICONTROL"
 #define DBG(fmt , args...) \
-	do{ \
-		SECURE_LOGD("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
-	} while(0)
+	do { \
+		SECURE_LOGD("[%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
+	} while (0)
 
 #define INFO(fmt , args...) \
-	do{ \
-		SECURE_LOGI("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
-	} while(0)
+	do { \
+		SECURE_LOGI("[%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
+	} while (0)
 
 #define WARN(fmt , args...) \
-	do{ \
-		SECURE_LOGW("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
-	} while(0)
+	do { \
+		SECURE_LOGW("[%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
+	} while (0)
 
 #define ERR(fmt , args...) \
-	do{ \
-		SECURE_LOGE("[%s : %d] "fmt"\n",__func__,__LINE__,##args ); \
-	} while(0)
+	do { \
+		SECURE_LOGE("[%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
+	} while (0)
 
 #else /* MINICTRL_USE_DLOG */
 #define DBG(fmt , args...) \
-	do{ \
-		printf("[D][%s : %d] "fmt"\n", __func__,__LINE__,##args ); \
-	} while(0)
+	do { \
+		printf("[D][%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
+	} while (0)
 
 #define INFO(fmt , args...) \
-	do{ \
-		printf("[I][%s : %d] "fmt"\n", __func__,__LINE__,##args ); \
-	} while(0)
+	do { \
+		printf("[I][%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
+	} while (0)
 
 #define WARN(fmt , args...) \
-	do{ \
-		printf("[W][%s : %d] "fmt"\n", __func__,__LINE__,##args ); \
-	} while(0)
+	do { \
+		printf("[W][%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
+	} while (0)
 
 #define ERR(fmt , args...) \
-	do{ \
-		printf("[E][%s : %d] "fmt"\n", __func__,__LINE__,##args ); \
-	} while(0)
+	do { \
+		printf("[E][%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
+	} while (0)
 
 #endif /* MINICTRL_USE_DLOG */
 

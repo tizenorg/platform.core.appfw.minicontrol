@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2013-2015 Samsung Electronics Co., Ltd All Rights Reserved
+ * Copyright (c) 2013 - 2016 Samsung Electronics Co., Ltd All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ typedef void (*minicontrol_event_cb) (minicontrol_viewer_event_e event_type, bun
  * @see #minicontrol_target_viewer_e
  * @see #minicontrol_event_cb
  */
-Evas_Object* minicontrol_create_window(const char *name, minicontrol_target_viewer_e target_viewer, minicontrol_event_cb callback);
+Evas_Object *minicontrol_create_window(const char *name, minicontrol_target_viewer_e target_viewer, minicontrol_event_cb callback);
 
 /**
  * @brief Sends a event to the viewer.
