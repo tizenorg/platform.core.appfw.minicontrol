@@ -53,8 +53,6 @@ typedef void (*minicontrol_event_cb) (minicontrol_viewer_event_e event_type, bun
 /**
  * @brief Creates a window for minicontrol.
  * @since_tizen 2.4
- * @privlevel public
- * @privilege %http://tizen.org/privilege/minicontrol.provider
  * @param[in] name Name of minicontrol socket window
  * @param[in] target_viewer Target viewer for minicontrol. You can select multiple viewers by using bitwise OR operator.
  * @param[in] callback a callback function for events originated by minicontrol viewer.
@@ -68,15 +66,12 @@ Evas_Object* minicontrol_create_window(const char *name, minicontrol_target_view
  * @brief Sends a event to the viewer.
  * @remarks When a viewer doesn't handle some events, it can be ignored.
  * @since_tizen 2.4
- * @privlevel public
- * @privilege %http://tizen.org/privilege/minicontrol.provider
  * @param[in] minicontrol minicontrol window
  * @param[in] event Type of the event
  * @param[in] event_arg Bundle argument of the event
  * @return #MINICONTROL_ERROR_NONE on success,
  *         otherwise an error code (see #MINICONTROL_ERROR_XXX) on failure
  * @retval #MINICONTROL_ERROR_INVALID_PARAMETER Invalid argument
- * @retval #MINICONTROL_ERROR_PERMISSION_DENIED Permission denied
  * @see #minicontrol_provider_event_e
  * @see #minicontrol_create_window
  * @see #minicontrol_request_to_viewer_e
