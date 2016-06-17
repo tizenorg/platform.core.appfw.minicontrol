@@ -42,48 +42,53 @@ struct _minicontrol_provider {
 	minicontrol_event_cb event_callback;
 };
 
-static void _minictrl_win_del_cb(void *data, Evas *e, Evas_Object *obj, void *event_info);
-static void _minictrl_win_hide_cb(void *data, Evas *e, Evas_Object *obj, void *event_info);
-static void _minictrl_win_show_cb(void *data, Evas *e, Evas_Object *obj, void *event_info);
-static void _minictrl_win_resize_cb(void *data, Evas *e, Evas_Object *obj, void *event_info);
+static void _minictrl_win_del_cb(void *data, Evas *e, Evas_Object *obj,
+		void *event_info);
+static void _minictrl_win_hide_cb(void *data, Evas *e, Evas_Object *obj,
+		void *event_info);
+static void _minictrl_win_show_cb(void *data, Evas *e, Evas_Object *obj,
+		void *event_info);
+static void _minictrl_win_resize_cb(void *data, Evas *e, Evas_Object *obj,
+		void *event_info);
 
 static void __minicontrol_provider_free(struct _minicontrol_provider *pd)
 {
-	if (pd) {
-		if (pd->name)
-			free(pd->name);
+	if (pd == NULL)
+		return;
 
-		if (pd->running_sh)
-			_minictrl_dbus_sig_handle_dettach(pd->running_sh);
+	if (pd->name)
+		free(pd->name);
 
-		if (pd->event_sh)
-			_minictrl_dbus_sig_handle_dettach(pd->event_sh);
+	if (pd->running_sh)
+		_minictrl_dbus_sig_handle_dettach(pd->running_sh);
 
-		free(pd);
-	}
+	if (pd->event_sh)
+		_minictrl_dbus_sig_handle_dettach(pd->event_sh);
+
+	free(pd);
 }
 
 static void _running_req_cb(void *data, GVariant *parameters)
 {
-	struct _minicontrol_provider *pd;
+	struct _minicontrol_provider *pd = data;
+	Evas_Coord w = 0;
+	Evas_Coord h = 0;
 
-	if (!data) {
-		ERR("data is NULL");
+	if (!pd) {
+		ERR("provider is NULL");
 		return;
 	}
-	pd = data;
 
 	if (pd->state == MINICTRL_STATE_RUNNING) {
-		Evas_Coord w = 0;
-		Evas_Coord h = 0;
 		evas_object_geometry_get(pd->obj, NULL, NULL, &w, &h);
-		_minictrl_provider_message_send(MINICONTROL_EVENT_START, pd->name, w, h, 0);
+		_minictrl_provider_message_send(MINICONTROL_EVENT_START,
+				pd->name, w, h, 0);
 	}
 }
 
 static void _sig_to_provider_handler_cb(void *data, GVariant *parameters)
 {
-	struct _minicontrol_provider *pd;
+	struct _minicontrol_provider *pd = data;
 	char *minicontrol_name = NULL;
 	minicontrol_viewer_event_e event;
 	bundle *event_arg_bundle;
@@ -92,11 +97,10 @@ static void _sig_to_provider_handler_cb(void *data, GVariant *parameters)
 	Evas_Coord width;
 	Evas_Coord height;
 
-	if (!data) {
-		ERR("data is NULL");
+	if (!pd) {
+		ERR("provider is NULL");
 		return;
 	}
-	pd = data;
 
 	g_variant_get(parameters, "(&si&su)", &minicontrol_name, &event,
 			&serialized_arg, &serialized_arg_length);
@@ -127,8 +131,7 @@ static void _sig_to_provider_handler_cb(void *data, GVariant *parameters)
 
 static char *_minictrl_create_name(const char *name)
 {
-	char *buf;
-	int size = 0;
+	char buf[256];
 
 	if (!name) {
 		ERR("name is NULL, invaild parameter");
@@ -136,41 +139,18 @@ static char *_minictrl_create_name(const char *name)
 		return NULL;
 	}
 
-	size = snprintf(NULL, 0, "[%s]", name) + 1;
-	buf = (char *)malloc(sizeof(char) * size);
-	if (!buf) {
-		ERR("fail to alloc buf");
-		set_last_result(MINICONTROL_ERROR_OUT_OF_MEMORY);
-		return NULL;
-	}
+	snprintf(buf, sizeof(buf), "[%s]", name);
 
-	snprintf(buf, size, "[%s]", name);
-
-	return buf;
+	return strdup(buf);
 }
 
-static void _access_changed_cb(void *data, Evas_Object *obj, void *event_info)
-{
-	Ecore_Evas *ee = ecore_evas_ecore_evas_get(evas_object_evas_get(obj));
-	if (ee != NULL) {
-		if (elm_config_access_get()) {
-			/* TODO : Check this API is supported
-			ecore_evas_extn_socket_events_block_set(ee, EINA_TRUE);
-			 */
-		} else {
-			/* TODO : Check this API is supported
-			ecore_evas_extn_socket_events_block_set(ee, EINA_FALSE);
-			 */
-		}
-	}
-}
-
-
-EXPORT_API Evas_Object *minicontrol_create_window(const char *name, minicontrol_target_viewer_e target_viewer, minicontrol_event_cb event_callback)
+EXPORT_API Evas_Object *minicontrol_create_window(const char *name,
+		minicontrol_target_viewer_e target_viewer,
+		minicontrol_event_cb event_callback)
 {
 	int err_from_elm;
-	Evas_Object *win = NULL;
-	char *name_inter = NULL;
+	Evas_Object *win;
+	char *name_inter;
 	struct _minicontrol_provider *pd;
 
 	if (!name) {
@@ -186,22 +166,11 @@ EXPORT_API Evas_Object *minicontrol_create_window(const char *name, minicontrol_
 		return NULL;
 	}
 
-	if (elm_config_access_get()) {
-		Ecore_Evas *ee = ecore_evas_ecore_evas_get(evas_object_evas_get(win));
-
-		if (ee != NULL) {
-			/* TODO : Check this API is supported
-			ecore_evas_extn_socket_events_block_set(ee, EINA_TRUE);
-			 */
-		}
-
-	}
-	evas_object_smart_callback_add(win, "access,changed", _access_changed_cb, NULL);
-
 	name_inter = _minictrl_create_name(name);
 	if (!name_inter) {
 		ERR("Fail to create name_inter for : %s", name);
 		evas_object_del(win);
+		set_last_result(MINICONTROL_ERROR_OUT_OF_MEMORY);
 		return NULL;
 	}
 
@@ -224,28 +193,36 @@ EXPORT_API Evas_Object *minicontrol_create_window(const char *name, minicontrol_
 
 	}
 	memset(pd, 0x00, sizeof(struct _minicontrol_provider));
+
 	pd->name = name_inter;
 	pd->state = MINICTRL_STATE_READY;
 	pd->obj = win;
 
 	evas_object_data_set(win, MINICTRL_DATA_KEY, pd);
-
 	elm_win_autodel_set(win, EINA_TRUE);
 
-	evas_object_event_callback_add(win, EVAS_CALLBACK_DEL, _minictrl_win_del_cb, pd);
-	evas_object_event_callback_add(win, EVAS_CALLBACK_SHOW, _minictrl_win_show_cb, pd);
-	evas_object_event_callback_add(win, EVAS_CALLBACK_HIDE,	_minictrl_win_hide_cb, pd);
-	evas_object_event_callback_add(win, EVAS_CALLBACK_RESIZE, _minictrl_win_resize_cb, pd);
+	evas_object_event_callback_add(win, EVAS_CALLBACK_DEL,
+			_minictrl_win_del_cb, pd);
+	evas_object_event_callback_add(win, EVAS_CALLBACK_SHOW,
+			_minictrl_win_show_cb, pd);
+	evas_object_event_callback_add(win, EVAS_CALLBACK_HIDE,
+			_minictrl_win_hide_cb, pd);
+	evas_object_event_callback_add(win, EVAS_CALLBACK_RESIZE,
+			_minictrl_win_resize_cb, pd);
 
-	pd->running_sh = _minictrl_dbus_sig_handle_attach(MINICTRL_DBUS_SIG_RUNNING_REQ, _running_req_cb, pd);
-	pd->event_sh   = _minictrl_dbus_sig_handle_attach(MINICTRL_DBUS_SIG_TO_PROVIDER, _sig_to_provider_handler_cb, pd);
+	pd->running_sh = _minictrl_dbus_sig_handle_attach(
+			MINICTRL_DBUS_SIG_RUNNING_REQ, _running_req_cb, pd);
+	pd->event_sh = _minictrl_dbus_sig_handle_attach(
+			MINICTRL_DBUS_SIG_TO_PROVIDER,
+			_sig_to_provider_handler_cb, pd);
 	pd->event_callback = event_callback;
-
 	INFO("new minicontrol created - %s", pd->name);
+
 	return win;
 }
 
-EXPORT_API int minicontrol_send_event(Evas_Object *mincontrol, minicontrol_provider_event_e event, bundle *event_arg)
+EXPORT_API int minicontrol_send_event(Evas_Object *mincontrol,
+		minicontrol_provider_event_e event, bundle *event_arg)
 {
 	struct _minicontrol_provider *pd;
 	int ret = MINICONTROL_ERROR_NONE;
@@ -266,8 +243,10 @@ EXPORT_API int minicontrol_send_event(Evas_Object *mincontrol, minicontrol_provi
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
 
-	if (pd->state == MINICTRL_STATE_RUNNING)
-		ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER, pd->name, event, event_arg);
+	if (pd->state == MINICTRL_STATE_RUNNING) {
+		ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER,
+				pd->name, event, event_arg);
+	}
 
 	return ret;
 }
@@ -276,6 +255,8 @@ static int minicontrol_win_start(Evas_Object *mincontrol)
 {
 	struct _minicontrol_provider *pd;
 	int ret = MINICONTROL_ERROR_NONE;
+	Evas_Coord w = 0;
+	Evas_Coord h = 0;
 
 	if (!mincontrol) {
 		ERR("mincontrol is NULL, invaild parameter");
@@ -294,13 +275,11 @@ static int minicontrol_win_start(Evas_Object *mincontrol)
 	}
 
 	if (pd->state != MINICTRL_STATE_RUNNING) {
-		Evas_Coord w = 0;
-		Evas_Coord h = 0;
 		pd->state = MINICTRL_STATE_RUNNING;
-
 		evas_object_geometry_get(mincontrol, NULL, NULL, &w, &h);
 		_minictrl_provider_proc_send(MINICONTROL_DBUS_PROC_EXCLUDE);
-		ret = _minictrl_provider_message_send(MINICONTROL_EVENT_START, pd->name, w, h, 0);
+		ret = _minictrl_provider_message_send(MINICONTROL_EVENT_START,
+				pd->name, w, h, 0);
 	}
 
 	return ret;
@@ -326,18 +305,21 @@ static int minicontrol_win_stop(Evas_Object *mincontrol)
 		ERR("pd name is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
+
 	if (pd->state != MINICTRL_STATE_READY) {
 		pd->state = MINICTRL_STATE_READY;
 		_minictrl_provider_proc_send(MINICONTROL_DBUS_PROC_INCLUDE);
-		ret = _minictrl_provider_message_send(MINICONTROL_EVENT_STOP, pd->name, 0, 0, 0);
+		ret = _minictrl_provider_message_send(MINICONTROL_EVENT_STOP,
+				pd->name, 0, 0, 0);
 	}
 
 	return ret;
 }
 
-static void _minictrl_win_del_cb(void *data, Evas *e, Evas_Object *obj, void *event_info)
+static void _minictrl_win_del_cb(void *data, Evas *e, Evas_Object *obj,
+		void *event_info)
 {
-	struct _minicontrol_provider *pd = NULL;
+	struct _minicontrol_provider *pd;
 
 	minicontrol_win_stop(obj);
 
@@ -362,20 +344,19 @@ static void _minictrl_win_show_cb(void *data, Evas *e,
 static void _minictrl_win_resize_cb(void *data, Evas *e,
 		Evas_Object *obj, void *event_info)
 {
-	struct _minicontrol_provider *pd;
+	struct _minicontrol_provider *pd = data;
+	Evas_Coord w = 0;
+	Evas_Coord h = 0;
 
-	if (!data) {
-		ERR("data is NULL, invaild parameter");
+	if (!pd) {
+		ERR("Invalid parameter");
 		return;
 	}
-	pd = data;
 
 	if (pd->state == MINICTRL_STATE_RUNNING) {
-		Evas_Coord w = 0;
-		Evas_Coord h = 0;
-
 		evas_object_geometry_get(obj, NULL, NULL, &w, &h);
-		_minictrl_provider_message_send(MINICONTROL_EVENT_RESIZE, pd->name, w, h, 0);
+		_minictrl_provider_message_send(MINICONTROL_EVENT_RESIZE,
+				pd->name, w, h, 0);
 	}
 }
 
@@ -397,18 +378,6 @@ EXPORT_API Evas_Object *minicontrol_win_add(const char *name)
 		ERR("elm_win_add returns null for [%s]", name);
 		return NULL;
 	}
-
-	if (elm_config_access_get()) {
-		Ecore_Evas *ee = ecore_evas_ecore_evas_get(evas_object_evas_get(win));
-
-		if (ee != NULL) {
-			/* TODO : Check this API is supported
-			ecore_evas_extn_socket_events_block_set(ee, EINA_TRUE);
-			 */
-		}
-
-	}
-	evas_object_smart_callback_add(win, "access,changed", _access_changed_cb, NULL);
 
 	name_inter = _minictrl_create_name(name);
 	if (!name_inter) {
@@ -434,6 +403,7 @@ EXPORT_API Evas_Object *minicontrol_win_add(const char *name)
 
 	}
 	memset(pd, 0x00, sizeof(struct _minicontrol_provider));
+
 	pd->name = name_inter;
 	pd->state = MINICTRL_STATE_READY;
 	pd->obj = win;
@@ -442,21 +412,26 @@ EXPORT_API Evas_Object *minicontrol_win_add(const char *name)
 
 	elm_win_autodel_set(win, EINA_TRUE);
 
-	evas_object_event_callback_add(win, EVAS_CALLBACK_DEL, _minictrl_win_del_cb, pd);
-	evas_object_event_callback_add(win, EVAS_CALLBACK_SHOW, _minictrl_win_show_cb, pd);
-	evas_object_event_callback_add(win, EVAS_CALLBACK_HIDE,	_minictrl_win_hide_cb, pd);
-	evas_object_event_callback_add(win, EVAS_CALLBACK_RESIZE, _minictrl_win_resize_cb, pd);
+	evas_object_event_callback_add(win, EVAS_CALLBACK_DEL,
+			_minictrl_win_del_cb, pd);
+	evas_object_event_callback_add(win, EVAS_CALLBACK_SHOW,
+			_minictrl_win_show_cb, pd);
+	evas_object_event_callback_add(win, EVAS_CALLBACK_HIDE,
+			_minictrl_win_hide_cb, pd);
+	evas_object_event_callback_add(win, EVAS_CALLBACK_RESIZE,
+			_minictrl_win_resize_cb, pd);
 
-	pd->running_sh = _minictrl_dbus_sig_handle_attach(MINICTRL_DBUS_SIG_RUNNING_REQ, _running_req_cb, pd);
-
+	pd->running_sh = _minictrl_dbus_sig_handle_attach(
+			MINICTRL_DBUS_SIG_RUNNING_REQ, _running_req_cb, pd);
 	INFO("new minicontrol created - %s", pd->name);
+
 	return win;
 }
 
-EXPORT_API int minicontrol_request(Evas_Object *mincontrol, minicontrol_request_e request)
+EXPORT_API int minicontrol_request(Evas_Object *mincontrol,
+		minicontrol_request_e request)
 {
 	struct _minicontrol_provider *pd;
-	int ret = MINICONTROL_ERROR_NONE;
 	minicontrol_event_e event;
 
 	if (!mincontrol) {
@@ -480,28 +455,24 @@ EXPORT_API int minicontrol_request(Evas_Object *mincontrol, minicontrol_request_
 		case MINICONTROL_REQ_HIDE_VIEWER:
 			event = MINICONTROL_EVENT_REQUEST_HIDE;
 			break;
-
 		case MINICONTROL_REQ_REPORT_VIEWER_ANGLE:
 			event = MINICONTROL_EVENT_REQUEST_ANGLE;
 			break;
-
 		case MINICONTROL_REQ_FREEZE_SCROLL_VIEWER:
 		case MINICONTROL_REQ_UNFREEZE_SCROLL_VIEWER:
 		case MINICONTROL_REQ_ROTATE_PROVIDER:
 			WARN("Could be not supported [%d]", request);
 			event = request;
 			break;
-
-		case MINICONTROL_REQ_NONE:
 		default:
 			ERR("Not supported request[%d]", request);
-			ret = MINICONTROL_ERROR_NOT_SUPPORTED;
-			goto out;
+			return MINICONTROL_ERROR_NOT_SUPPORTED;
 		}
 
-		_minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER, pd->name, event, NULL);
+		_minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER, pd->name,
+				event, NULL);
 	}
-out:
-	return ret;
+
+	return MINICONTROL_ERROR_NONE;
 }
 
