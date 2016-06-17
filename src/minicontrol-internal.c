@@ -15,8 +15,8 @@
  */
 
 #include <stdlib.h>
-#include <dbus/dbus.h>
-#include <dbus/dbus-glib-lowlevel.h>
+#include <glib.h>
+#include <gio/gio.h>
 #include <bundle.h>
 
 #include "minicontrol-error.h"
@@ -34,359 +34,233 @@
 #define PROC_DBUS_INCLUDE	"include"
 
 struct _minictrl_sig_handle {
-	DBusConnection *conn;
-	void (*callback) (void *data, DBusMessage *msg);
+	GDBusConnection *conn;
+	guint s_id;
+	void (*callback)(void *data, GVariant *parameters);
 	void *user_data;
 	char *signal;
 };
 
+static int __send_signal(const char *object_path, const char *interface_name,
+		const char *signal_name, GVariant *parameters)
+{
+	GError *err = NULL;
+	GDBusConnection *conn;
+	gboolean ret;
+
+	conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &err);
+	if (conn == NULL) {
+		ERR("g_bus_get_sync() failed. %s", err->message);
+		g_error_free(err);
+		return MINICONTROL_ERROR_IPC_FAILURE;
+	}
+
+	ret = g_dbus_connection_emit_signal(conn, NULL, object_path,
+			interface_name, signal_name, parameters, &err);
+	if (!ret) {
+		ERR("g_dbus_connection_emit_signal() failed. %s", err->message);
+		g_error_free(err);
+		g_object_unref(conn);
+		return MINICONTROL_ERROR_IPC_FAILURE;
+	}
+
+	g_dbus_connection_flush_sync(conn, NULL, &err);
+	g_object_unref(conn);
+	g_clear_error(&err);
+
+	return MINICONTROL_ERROR_NONE;
+}
+
 int _minictrl_viewer_req_message_send(void)
 {
-	DBusConnection *connection = NULL;
-	DBusMessage *message = NULL;
-	DBusError err;
-	dbus_bool_t dbus_ret;
-	int ret = MINICONTROL_ERROR_NONE;
+	int ret;
 
-	dbus_error_init(&err);
-	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
-	if (!connection) {
-		ERR("Fail to dbus_bus_get : %s", err.message);
-		ret = MINICONTROL_ERROR_IPC_FAILURE;
-		goto release_n_return;
-	}
-
-	message = dbus_message_new_signal(MINICTRL_DBUS_PATH,
-				MINICTRL_DBUS_INTERFACE,
-				MINICTRL_DBUS_SIG_RUNNING_REQ);
-	if (!message) {
-		ERR("fail to create dbus message");
-		ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
-		goto release_n_return;
-	}
-
-	dbus_ret = dbus_connection_send(connection, message, NULL);
-	if (!dbus_ret) {
-		ERR("fail to send dbus viewer req message");
-		ret = MINICONTROL_ERROR_IPC_FAILURE;
-		goto release_n_return;
-	}
-
-	dbus_connection_flush(connection);
-
-release_n_return:
-	dbus_error_free(&err);
-
-	if (message)
-		dbus_message_unref(message);
-
-	if (connection)
-		dbus_connection_unref(connection);
+	ret = __send_signal(MINICTRL_DBUS_PATH, MINICTRL_DBUS_INTERFACE,
+			MINICTRL_DBUS_SIG_RUNNING_REQ, NULL);
 
 	return ret;
 }
 
 int _minictrl_provider_proc_send(int type)
 {
-	DBusError err;
-	DBusConnection *conn = NULL;
-	DBusMessage *msg = NULL;
-	int ret = -1;
+	int ret;
+	GVariant *param;
+	const char *type_str;
 	int pid = getpid();
-	dbus_uint32_t serial = 0;
-	char *typestr;
-	if (type == MINICONTROL_DBUS_PROC_EXCLUDE)
-		typestr = PROC_DBUS_EXCLUDE;
-	else if  (type == MINICONTROL_DBUS_PROC_INCLUDE)
-		typestr = PROC_DBUS_INCLUDE;
-	else {
+
+	switch (type) {
+	case MINICONTROL_DBUS_PROC_EXCLUDE:
+		type_str = PROC_DBUS_EXCLUDE;
+		break;
+	case MINICONTROL_DBUS_PROC_INCLUDE:
+		type_str = PROC_DBUS_INCLUDE;
+		break;
+	default:
 		ERR("Check unsupported type : %d", type);
-		return ret;
+		return -1;
 	}
-	DBG("_minictrl_provider_proc_send : %d, %d", pid, type);
-	dbus_error_init(&err);
-	conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
-	if (!conn) {
-		ERR("Fail to dbus_bus_get : %s", err.message);
-		ret = MINICONTROL_ERROR_IPC_FAILURE;
-		goto release_n_return;
-	}
-	msg = dbus_message_new_signal(PROC_DBUS_OBJECT, /* object name of the signal */
-			    PROC_DBUS_INTERFACE, /* interface name of the signal */
-			    PROC_DBUS_METHOD); /* name of the signal */
-	if (!msg) {
-		ERR("ERR Could not create DBus Message");
-		goto release_n_return;
-	}
-	ret = dbus_message_append_args(msg,
-			    DBUS_TYPE_STRING, &typestr,
-			    DBUS_TYPE_INT32, &pid,
-			    DBUS_TYPE_INVALID);
-	if (!dbus_connection_send(conn, msg, &serial))
-		ERR("ERR send DBus Message");
-	dbus_connection_flush(conn);
-release_n_return:
-	dbus_error_free(&err);
 
-	if (msg)
-		dbus_message_unref(msg);
+	DBG("pid: %d, type: %d(%s)", pid, type, type_str);
 
-	if (conn)
-		dbus_connection_unref(conn);
+	param = g_variant_new("(si)", type_str, pid);
+	if (param == NULL) {
+		ERR("out of memory");
+		return MINICONTROL_ERROR_OUT_OF_MEMORY;
+	}
+
+	ret = __send_signal(PROC_DBUS_OBJECT, PROC_DBUS_INTERFACE,
+			PROC_DBUS_METHOD, param);
 
 	return ret;
 }
 
-int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, int event, bundle *signal_arg)
+int _minictrl_send_event(const char *signal_name, const char *minicontrol_name,
+		int event, bundle *signal_arg)
 {
-	DBusConnection *connection = NULL;
-	DBusMessage *message = NULL;
-	DBusError err;
-	dbus_bool_t dbus_ret;
+	int ret;
 	bundle_raw *serialized_arg = NULL;
 	unsigned int serialized_arg_length = 0;
-	int ret = MINICONTROL_ERROR_NONE;
+	GVariant *param;
 
-	if (minicontrol_name == NULL) {
+	if (minicontrol_name == NULL || signal_name == NULL) {
 		ERR("Invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
 
-	dbus_error_init(&err);
-	connection = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
-	if (!connection) {
-		ERR("Fail to dbus_bus_get : %s", err.message);
-		ret = MINICONTROL_ERROR_IPC_FAILURE;
-		goto release_n_return;
-	}
-
-	message = dbus_message_new_signal(MINICTRL_DBUS_PATH, MINICTRL_DBUS_INTERFACE, signal_name);
-
-	if (!message) {
-		ERR("fail to create dbus message");
-		ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
-		goto release_n_return;
-	}
-
-	if (signal_arg != NULL) {
-		if (bundle_encode(signal_arg, &serialized_arg, (int *)&serialized_arg_length) != BUNDLE_ERROR_NONE) {
-			ERR("fail to serialize bundle argument");
-			ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
-			goto release_n_return;
+	if (signal_arg) {
+		ret = bundle_encode(signal_arg, &serialized_arg,
+				(int *)&serialized_arg_length);
+		if (ret != BUNDLE_ERROR_NONE) {
+			ERR("Failed to serialize bundle argument");
+			return MINICONTROL_ERROR_OUT_OF_MEMORY;
 		}
 	} else {
 		serialized_arg = (bundle_raw *)strdup("");
+		if (serialized_arg == NULL) {
+			ERR("out of memory");
+			return MINICONTROL_ERROR_OUT_OF_MEMORY;
+		}
 		serialized_arg_length = 0;
 	}
 
-	dbus_ret = dbus_message_append_args(message,
-			DBUS_TYPE_STRING, &minicontrol_name,
-			DBUS_TYPE_INT32,  &event,
-			DBUS_TYPE_STRING, &serialized_arg,
-			DBUS_TYPE_UINT32,  &serialized_arg_length,
-			DBUS_TYPE_INVALID);
-
-	if (!dbus_ret) {
-		ERR("fail to append arguments to dbus message : [%s][%d]", minicontrol_name, event);
-		ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
-		goto release_n_return;
-	}
-
-	dbus_ret = dbus_connection_send(connection, message, NULL);
-
-	if (!dbus_ret) {
-		ERR("fail to send dbus message : %s", minicontrol_name);
-		ret = MINICONTROL_ERROR_IPC_FAILURE;
-		goto release_n_return;
-	}
-
-	dbus_connection_flush(connection);
-
-release_n_return:
-	dbus_error_free(&err);
-
-	if (serialized_arg)
+	param = g_variant_new("(sisu)", minicontrol_name, event,
+			serialized_arg, serialized_arg_length);
+	if (param == NULL) {
+		_E("out of memory");
 		free(serialized_arg);
+		return MINICONTROL_ERROR_OUT_OF_MEMORY;
+	}
 
-	if (message)
-		dbus_message_unref(message);
+	ret = __send_signal(MINICTRL_DBUS_PATH, MINICTRL_DBUS_INTERFACE,
+			signal_name, param);
 
-	if (connection)
-		dbus_connection_unref(connection);
+	free(serialized_arg);
 
 	return ret;
 }
 
-
-int _minictrl_provider_message_send(int event, const char *minicontrol_name, unsigned int witdh, unsigned int height, minicontrol_priority_e priority)
+int _minictrl_provider_message_send(int event, const char *minicontrol_name,
+		unsigned int witdh, unsigned int height,
+		minicontrol_priority_e priority)
 {
-	bundle *event_arg_bundle = NULL;
-	int ret = MINICONTROL_ERROR_NONE;
-	char bundle_value_buffer[BUNDLE_BUFFER_LENGTH] = { 0, };
+	int ret;
+	bundle *event_arg_bundle;
+	char bundle_value_buffer[BUNDLE_BUFFER_LENGTH];
 
 	event_arg_bundle = bundle_create();
-
 	if (event_arg_bundle == NULL) {
-		ERR("fail to create a bundle instance");
-		ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
-		goto out;
+		ERR("Fail to create a bundle instance");
+		return MINICONTROL_ERROR_OUT_OF_MEMORY;
 	}
 
-	snprintf(bundle_value_buffer, BUNDLE_BUFFER_LENGTH, "%s", minicontrol_name);
+	snprintf(bundle_value_buffer, sizeof(bundle_value_buffer),
+			"%s", minicontrol_name);
 
-	bundle_add_str(event_arg_bundle, "minicontrol_name", bundle_value_buffer);
+	bundle_add_str(event_arg_bundle, "minicontrol_name",
+			bundle_value_buffer);
 	bundle_add_byte(event_arg_bundle, "width", (void *)&witdh, sizeof(int));
-	bundle_add_byte(event_arg_bundle, "height", (void *)&height, sizeof(int));
-	bundle_add_byte(event_arg_bundle, "priority", (void *)&priority, sizeof(int));
+	bundle_add_byte(event_arg_bundle, "height", (void *)&height,
+			sizeof(int));
+	bundle_add_byte(event_arg_bundle, "priority", (void *)&priority,
+			sizeof(int));
 
-	_minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER, minicontrol_name, event, event_arg_bundle);
-
-out:
-	if (event_arg_bundle)
-		bundle_free(event_arg_bundle);
+	ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_VIEWER,
+			minicontrol_name, event, event_arg_bundle);
 
 	return ret;
 }
 
-static DBusHandlerResult _minictrl_signal_filter(DBusConnection *conn, DBusMessage *msg, void *user_data)
+static void __minictrl_signal_filter(GDBusConnection *connection,
+		const gchar *sender_name, const gchar *object_path,
+		const gchar *interface_name, const gchar *signal_name,
+		GVariant *parameters, gpointer user_data)
 {
-	minictrl_sig_handle *handle = NULL;
-	const char *interface;
-	DBusError error;
-	dbus_bool_t ret;
+	minictrl_sig_handle *handle = (minictrl_sig_handle *)user_data;
 
-	if (!user_data)
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	if (handle == NULL)
+		return;
 
-	handle = user_data;
-
-	dbus_error_init(&error);
-
-	interface = dbus_message_get_interface(msg);
-	if (!interface)
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-
-	if (strcmp(MINICTRL_DBUS_INTERFACE, interface))
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-
-	ret = dbus_message_is_signal(msg, interface, handle->signal);
-	if (!ret) {
-		DBG("this msg is not signal");
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	if (g_strcmp0(signal_name, handle->signal) == 0) {
+		if (handle->callback)
+			handle->callback(handle->user_data, parameters);
 	}
-
-	if (handle->callback)
-		handle->callback(handle->user_data, msg);
-
-	return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-
 minictrl_sig_handle *_minictrl_dbus_sig_handle_attach(const char *signal,
-				void (*callback) (void *data, DBusMessage *msg),
-				void *data)
+		void (*callback)(void *data, GVariant *parameters), void *data)
 {
-	minictrl_sig_handle *handle = NULL;
-	DBusError err;
-	DBusConnection *conn = NULL;
-	char rule[1024] = {'\0', };
+	GError *err = NULL;
+	minictrl_sig_handle *handle;
 
-	if (!signal) {
-		ERR("signal is NULL");
+	if (signal == NULL || callback == NULL) {
+		ERR("Invalid prameter");
 		return NULL;
 	}
 
-	if (!callback) {
-		ERR("call is NULL");
+	handle = (minictrl_sig_handle *)malloc(sizeof(minictrl_sig_handle));
+	if (handle == NULL) {
+		ERR("out of memory");
 		return NULL;
 	}
 
-	handle = malloc(sizeof(minictrl_sig_handle));
-	if (!handle) {
-		ERR("fail to alloc handle");
+	handle->conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &err);
+	if (handle->conn == NULL) {
+		ERR("g_bus_get_sync() failed. %s", err->message);
+		g_error_free(err);
+		free(handle);
 		return NULL;
 	}
 
-	dbus_error_init(&err);
-	conn = dbus_bus_get_private(DBUS_BUS_SYSTEM, &err);
-	if (!conn) {
-		ERR("fail to get bus : %s", err.message);
-		goto error_n_return;
+	handle->s_id = g_dbus_connection_signal_subscribe(handle->conn,
+			NULL, MINICTRL_DBUS_INTERFACE, signal,
+			MINICTRL_DBUS_PATH, NULL, G_DBUS_SIGNAL_FLAGS_NONE,
+			__minictrl_signal_filter, handle, NULL);
+	if (handle->s_id == 0) {
+		ERR("g_dbus_connection_signal_subscribe() failed.");
+		g_object_unref(handle->conn);
+		free(handle);
+		return NULL;
 	}
 
-	dbus_connection_setup_with_g_main(conn, NULL);
-	snprintf(rule, 1024,
-		"path='%s',type='signal',interface='%s',member='%s'",
-		MINICTRL_DBUS_PATH,
-		MINICTRL_DBUS_INTERFACE,
-		signal);
-
-	dbus_bus_add_match(conn, rule, &err);
-	if (dbus_error_is_set(&err)) {
-		ERR("fail to dbus_bus_remove_match : %s",
-				err.message);
-		goto error_n_return;
-	}
-
-	if (dbus_connection_add_filter(conn, _minictrl_signal_filter,
-					handle, NULL) == FALSE) {
-		ERR("fail to dbus_connection_add_filter : %s",
-				err.message);
-		goto error_n_return;
-	}
-
-	dbus_connection_set_exit_on_disconnect(conn, FALSE);
-
-	handle->conn = conn;
 	handle->callback = callback;
 	handle->user_data = data;
 	handle->signal = strdup(signal);
 
 	INFO("success to attach signal[%s]-[%p, %p]", signal, callback, data);
+	g_clear_error(&err);
 
 	return handle;
-
-
-error_n_return:
-	if (handle)
-		free(handle);
-
-	dbus_error_free(&err);
-
-	if (conn)
-		dbus_connection_close(conn);
-
-	return NULL;
 }
 
 void _minictrl_dbus_sig_handle_dettach(minictrl_sig_handle *handle)
 {
-	DBusError err;
-	char rule[1024] = {'\0', };
-
 	if (!handle) {
 		ERR("handle is NULL");
 		return;
 	}
 
-	dbus_error_init(&err);
-
-	dbus_connection_remove_filter(handle->conn, _minictrl_signal_filter, handle);
-
-	snprintf(rule, 1024,
-		"path='%s',type='signal',interface='%s',member='%s'",
-		MINICTRL_DBUS_PATH,
-		MINICTRL_DBUS_INTERFACE,
-		handle->signal);
-
-	dbus_bus_remove_match(handle->conn, rule, &err);
-	if (dbus_error_is_set(&err)) {
-		ERR("fail to dbus_bus_remove_match : %s", err.message);
-		dbus_error_free(&err);
-	}
-
-	dbus_connection_close(handle->conn);
-
+	g_dbus_connection_signal_unsubscribe(handle->conn, handle->s_id);
+	g_object_unref(handle->conn);
 	free(handle->signal);
 	free(handle);
 

@@ -15,7 +15,6 @@
  */
 
 #include <stdlib.h>
-#include <dbus/dbus.h>
 
 #include "minicontrol-error.h"
 #include "minicontrol-internal.h"

@@ -5,8 +5,8 @@ Release:    1
 Group:      Application Framework/Other
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
-BuildRequires: pkgconfig(dbus-1)
-BuildRequires: pkgconfig(dbus-glib-1)
+BuildRequires: pkgconfig(glib-2.0)
+BuildRequires: pkgconfig(gio-2.0)
 BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(evas)
 BuildRequires: pkgconfig(ecore-evas)

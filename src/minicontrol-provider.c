@@ -63,7 +63,7 @@ static void __minicontrol_provider_free(struct _minicontrol_provider *pd)
 	}
 }
 
-static void _running_req_cb(void *data, DBusMessage *msg)
+static void _running_req_cb(void *data, GVariant *parameters)
 {
 	struct _minicontrol_provider *pd;
 
@@ -81,17 +81,16 @@ static void _running_req_cb(void *data, DBusMessage *msg)
 	}
 }
 
-static void _sig_to_provider_handler_cb(void *data, DBusMessage *msg)
+static void _sig_to_provider_handler_cb(void *data, GVariant *parameters)
 {
 	struct _minicontrol_provider *pd;
-	DBusError err;
 	char *minicontrol_name = NULL;
 	minicontrol_viewer_event_e event;
-	dbus_bool_t dbus_ret;
-	bundle *event_arg_bundle = NULL;
+	bundle *event_arg_bundle;
 	bundle_raw *serialized_arg = NULL;
 	unsigned int serialized_arg_length = 0;
-
+	Evas_Coord width;
+	Evas_Coord height;
 
 	if (!data) {
 		ERR("data is NULL");
@@ -99,33 +98,23 @@ static void _sig_to_provider_handler_cb(void *data, DBusMessage *msg)
 	}
 	pd = data;
 
-	dbus_error_init(&err); /* Does not allocate any memory. the error only needs to be freed if it is set at some point. */
+	g_variant_get(parameters, "(&si&su)", &minicontrol_name, &event,
+			&serialized_arg, &serialized_arg_length);
 
-	dbus_ret = dbus_message_get_args(msg, &err,
-				DBUS_TYPE_STRING, &minicontrol_name,
-				DBUS_TYPE_INT32,  &event,
-				DBUS_TYPE_STRING, &serialized_arg,
-				DBUS_TYPE_UINT32, &serialized_arg_length,
-				DBUS_TYPE_INVALID);
+	INFO("minicontrol_name[%s] event[%d] pd->name[%s]",
+			minicontrol_name, event, pd->name);
 
-	if (!dbus_ret) {
-		ERR("fail to get args : %s", err.message);
-		dbus_error_free(&err);
-		return;
-	}
-
-	INFO("minicontrol_name[%s] event[%d] pd->name[%s]", minicontrol_name, event, pd->name);
-
-	if (minicontrol_name && pd->name && strcmp(minicontrol_name, pd->name) == 0) {
-		event_arg_bundle = bundle_decode(serialized_arg, serialized_arg_length);
-		/* event argument can be null */
-
+	if (minicontrol_name && pd->name &&
+			strcmp(minicontrol_name, pd->name) == 0) {
+		event_arg_bundle = bundle_decode(serialized_arg,
+				serialized_arg_length);
 		if (event == MINICONTROL_VIEWER_EVENT_SHOW) {
-			Evas_Coord width;
-			Evas_Coord height;
-			evas_object_geometry_get(pd->obj, NULL, NULL, &width, &height);
+			evas_object_geometry_get(pd->obj, NULL, NULL,
+					&width, &height);
 			INFO("width[%d] height[%d]", width, height);
-			_minictrl_provider_message_send(MINICONTROL_EVENT_RESIZE, pd->name, width, height, 0);
+			_minictrl_provider_message_send(
+					MINICONTROL_EVENT_RESIZE, pd->name,
+					width, height, 0);
 		}
 
 		if (pd->event_callback)
@@ -135,8 +124,6 @@ static void _sig_to_provider_handler_cb(void *data, DBusMessage *msg)
 			bundle_free(event_arg_bundle);
 	}
 }
-
-
 
 static char *_minictrl_create_name(const char *name)
 {
