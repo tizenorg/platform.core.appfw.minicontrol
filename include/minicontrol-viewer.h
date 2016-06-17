@@ -69,7 +69,7 @@ int minicontrol_viewer_send_event(const char *minicontrol_name, minicontrol_view
  * @param[in] data User data
  * @see #minicontrol_viewer_set_event_cb
  */
-typedef void (*minicontrol_viewer_event_cb) (minicontrol_event_e event, const char *minicontrol_name, bundle *event_arg, void *data);
+typedef void (*minicontrol_viewer_event_cb)(minicontrol_event_e event, const char *minicontrol_name, bundle *event_arg, void *data);
 
 /**
  * @brief Registers a callback for events originated by minicontrol provider.

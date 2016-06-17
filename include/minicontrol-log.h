@@ -28,46 +28,30 @@
 #endif
 
 #define LOG_TAG "MINICONTROL"
-#define DBG(fmt , args...) \
-	do { \
-		SECURE_LOGD("[%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
-	} while (0)
+#define DBG(fmt, args...) \
+	SECURE_LOGD("[%s : %d] "fmt"\n", __func__, __LINE__, ##args)
 
-#define INFO(fmt , args...) \
-	do { \
-		SECURE_LOGI("[%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
-	} while (0)
+#define INFO(fmt, args...) \
+	SECURE_LOGI("[%s : %d] "fmt"\n", __func__, __LINE__, ##args)
 
-#define WARN(fmt , args...) \
-	do { \
-		SECURE_LOGW("[%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
-	} while (0)
+#define WARN(fmt, args...) \
+	SECURE_LOGW("[%s : %d] "fmt"\n", __func__, __LINE__, ##args)
 
-#define ERR(fmt , args...) \
-	do { \
-		SECURE_LOGE("[%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
-	} while (0)
+#define ERR(fmt, args...) \
+	SECURE_LOGE("[%s : %d] "fmt"\n", __func__, __LINE__, ##args)
 
 #else /* MINICTRL_USE_DLOG */
-#define DBG(fmt , args...) \
-	do { \
-		printf("[D][%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
-	} while (0)
+#define DBG(fmt, args...) \
+	printf("[D][%s : %d] "fmt"\n", __func__, __LINE__, ##args)
 
-#define INFO(fmt , args...) \
-	do { \
-		printf("[I][%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
-	} while (0)
+#define INFO(fmt, args...) \
+	printf("[I][%s : %d] "fmt"\n", __func__, __LINE__, ##args)
 
-#define WARN(fmt , args...) \
-	do { \
-		printf("[W][%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
-	} while (0)
+#define WARN(fmt, args...) \
+	printf("[W][%s : %d] "fmt"\n", __func__, __LINE__, ##args)
 
-#define ERR(fmt , args...) \
-	do { \
-		printf("[E][%s : %d] "fmt"\n", __func__, __LINE__, ##args); \
-	} while (0)
+#define ERR(fmt, args...) \
+	printf("[E][%s : %d] "fmt"\n", __func__, __LINE__, ##args)
 
 #endif /* MINICTRL_USE_DLOG */
 
