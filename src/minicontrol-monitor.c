@@ -30,6 +30,7 @@ struct _minicontrol_monitor {
 
 static struct _minicontrol_monitor *g_monitor_h;
 
+/* LCOV_EXCL_START */
 static minicontrol_priority_e _int_to_priority(unsigned int value)
 {
 	minicontrol_priority_e priority;
@@ -48,7 +49,9 @@ static minicontrol_priority_e _int_to_priority(unsigned int value)
 
 	return priority;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 static void _sig_to_viewer_handler_cb(minicontrol_event_e event,
 		const char *minicontrol_name, bundle *event_arg, void *data)
 {
@@ -94,7 +97,9 @@ static void _sig_to_viewer_handler_cb(minicontrol_event_e event,
 	g_monitor_h->callback(action, minicontrol_name, width, height,
 			priority, g_monitor_h->user_data);
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API minicontrol_error_e minicontrol_monitor_start(
 		minicontrol_monitor_cb callback, void *data)
 {
@@ -121,7 +126,9 @@ EXPORT_API minicontrol_error_e minicontrol_monitor_start(
 
 	return _minictrl_viewer_req_message_send();
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API minicontrol_error_e minicontrol_monitor_stop(void)
 {
 	if (!g_monitor_h)
@@ -134,4 +141,5 @@ EXPORT_API minicontrol_error_e minicontrol_monitor_stop(void)
 
 	return MINICONTROL_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 

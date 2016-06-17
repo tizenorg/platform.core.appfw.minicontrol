@@ -137,8 +137,10 @@ static char *_minictrl_create_name(const char *name)
 	size = strlen(name) + 3;
 	minictrl_name = malloc(sizeof(char) * size);
 	if (minictrl_name == NULL) {
+		/* LCOV_EXCL_START */
 		ERR("out of memory");
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	snprintf(minictrl_name, size, "[%s]", name);
@@ -163,35 +165,43 @@ EXPORT_API Evas_Object *minicontrol_create_window(const char *name,
 
 	win = elm_win_add(NULL, "minicontrol", ELM_WIN_SOCKET_IMAGE);
 	if (!win) {
+		/* LCOV_EXCL_START */
 		ERR("elm_win_add failed");
 		set_last_result(MINICONTROL_ERROR_ELM_FAILURE);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	name_inter = _minictrl_create_name(name);
 	if (!name_inter) {
+		/* LCOV_EXCL_START */
 		ERR("Fail to create name_inter for : %s", name);
 		set_last_result(MINICONTROL_ERROR_OUT_OF_MEMORY);
 		evas_object_del(win);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	err_from_elm = elm_win_socket_listen(win, name_inter, 0, EINA_TRUE);
 	if (!err_from_elm) {
+		/* LCOV_EXCL_START */
 		ERR("Fail to elm win socket listen [%d]", err_from_elm);
 		set_last_result(MINICONTROL_ERROR_ELM_FAILURE);
 		evas_object_del(win);
 		free(name_inter);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	pd = malloc(sizeof(struct _minicontrol_provider));
 	if (!pd) {
+		/* LCOV_EXCL_START */
 		ERR("Fail to alloc memory");
 		set_last_result(MINICONTROL_ERROR_OUT_OF_MEMORY);
 		evas_object_del(win);
 		free(name_inter);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 
 	}
 	memset(pd, 0x00, sizeof(struct _minicontrol_provider));
@@ -236,13 +246,17 @@ EXPORT_API int minicontrol_send_event(Evas_Object *mincontrol,
 
 	pd = evas_object_data_get(mincontrol, MINICTRL_DATA_KEY);
 	if (!pd) {
+		/* LCOV_EXCL_START */
 		ERR("pd is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (!pd->name) {
+		/* LCOV_EXCL_START */
 		ERR("pd name is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (pd->state == MINICTRL_STATE_RUNNING) {
@@ -267,13 +281,17 @@ static int minicontrol_win_start(Evas_Object *mincontrol)
 
 	pd = evas_object_data_get(mincontrol, MINICTRL_DATA_KEY);
 	if (!pd) {
+		/* LCOV_EXCL_START */
 		ERR("pd is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (!pd->name) {
+		/* LCOV_EXCL_START */
 		ERR("pd name is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (pd->state != MINICTRL_STATE_RUNNING) {
@@ -293,19 +311,25 @@ static int minicontrol_win_stop(Evas_Object *mincontrol)
 	int ret = MINICONTROL_ERROR_NONE;
 
 	if (!mincontrol) {
+		/* LCOV_EXCL_START */
 		ERR("mincontrol is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	pd = evas_object_data_get(mincontrol, MINICTRL_DATA_KEY);
 	if (!pd) {
+		/* LCOV_EXCL_START */
 		ERR("pd is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (!pd->name) {
+		/* LCOV_EXCL_START */
 		ERR("pd name is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (pd->state != MINICTRL_STATE_READY) {
@@ -362,6 +386,7 @@ static void _minictrl_win_resize_cb(void *data, Evas *e,
 	}
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API Evas_Object *minicontrol_win_add(const char *name)
 {
 	Evas_Object *win = NULL;
@@ -429,7 +454,9 @@ EXPORT_API Evas_Object *minicontrol_win_add(const char *name)
 
 	return win;
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int minicontrol_request(Evas_Object *mincontrol,
 		minicontrol_request_e request)
 {
@@ -477,4 +504,5 @@ EXPORT_API int minicontrol_request(Evas_Object *mincontrol,
 
 	return MINICONTROL_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 

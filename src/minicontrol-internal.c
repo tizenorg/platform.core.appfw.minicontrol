@@ -50,18 +50,22 @@ static int __send_signal(const char *object_path, const char *interface_name,
 
 	conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &err);
 	if (conn == NULL) {
+		/* LCOV_EXCL_START */
 		ERR("g_bus_get_sync() failed. %s", err->message);
 		g_error_free(err);
 		return MINICONTROL_ERROR_IPC_FAILURE;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = g_dbus_connection_emit_signal(conn, NULL, object_path,
 			interface_name, signal_name, parameters, &err);
 	if (!ret) {
+		/* LCOV_EXCL_START */
 		ERR("g_dbus_connection_emit_signal() failed. %s", err->message);
 		g_error_free(err);
 		g_object_unref(conn);
 		return MINICONTROL_ERROR_IPC_FAILURE;
+		/* LCOV_EXCL_STOP */
 	}
 
 	g_dbus_connection_flush_sync(conn, NULL, &err);
@@ -95,8 +99,10 @@ int _minictrl_provider_proc_send(int type)
 
 	param = g_variant_new("(si)", type_str, pid);
 	if (param == NULL) {
+		/* LCOV_EXCL_START */
 		ERR("out of memory");
 		return MINICONTROL_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = __send_signal(PROC_DBUS_OBJECT, PROC_DBUS_INTERFACE,
@@ -122,14 +128,18 @@ int _minictrl_send_event(const char *signal_name, const char *minicontrol_name,
 		ret = bundle_encode(signal_arg, &serialized_arg,
 				(int *)&serialized_arg_length);
 		if (ret != BUNDLE_ERROR_NONE) {
+			/* LCOV_EXCL_START */
 			ERR("Failed to serialize bundle argument");
 			return MINICONTROL_ERROR_OUT_OF_MEMORY;
+			/* LCOV_EXCL_STOP */
 		}
 	} else {
 		serialized_arg = (bundle_raw *)strdup("");
 		if (serialized_arg == NULL) {
+			/* LCOV_EXCL_START */
 			ERR("out of memory");
 			return MINICONTROL_ERROR_OUT_OF_MEMORY;
+			/* LCOV_EXCL_STOP */
 		}
 		serialized_arg_length = 0;
 	}
@@ -137,9 +147,11 @@ int _minictrl_send_event(const char *signal_name, const char *minicontrol_name,
 	param = g_variant_new("(sisu)", minicontrol_name, event,
 			serialized_arg, serialized_arg_length);
 	if (param == NULL) {
+		/* LCOV_EXCL_START */
 		ERR("out of memory");
 		free(serialized_arg);
 		return MINICONTROL_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = __send_signal(MINICTRL_DBUS_PATH, MINICTRL_DBUS_INTERFACE,
@@ -160,8 +172,10 @@ int _minictrl_provider_message_send(int event, const char *minicontrol_name,
 
 	event_arg_bundle = bundle_create();
 	if (event_arg_bundle == NULL) {
+		/* LCOV_EXCL_START */
 		ERR("Fail to create a bundle instance");
 		return MINICONTROL_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 
 	snprintf(bundle_value_buffer, sizeof(bundle_value_buffer),
@@ -210,16 +224,20 @@ minictrl_sig_handle *_minictrl_dbus_sig_handle_attach(const char *signal,
 
 	handle = (minictrl_sig_handle *)malloc(sizeof(minictrl_sig_handle));
 	if (handle == NULL) {
+		/* LCOV_EXCL_START */
 		ERR("out of memory");
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	handle->conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &err);
 	if (handle->conn == NULL) {
+		/* LCOV_EXCL_START */
 		ERR("g_bus_get_sync() failed. %s", err->message);
 		g_error_free(err);
 		free(handle);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	handle->s_id = g_dbus_connection_signal_subscribe(handle->conn,
@@ -227,10 +245,12 @@ minictrl_sig_handle *_minictrl_dbus_sig_handle_attach(const char *signal,
 			MINICTRL_DBUS_PATH, NULL, G_DBUS_SIGNAL_FLAGS_NONE,
 			__minictrl_signal_filter, handle, NULL);
 	if (handle->s_id == 0) {
+		/* LCOV_EXCL_START */
 		ERR("g_dbus_connection_signal_subscribe() failed.");
 		g_object_unref(handle->conn);
 		free(handle);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	handle->callback = callback;
@@ -246,8 +266,10 @@ minictrl_sig_handle *_minictrl_dbus_sig_handle_attach(const char *signal,
 void _minictrl_dbus_sig_handle_dettach(minictrl_sig_handle *handle)
 {
 	if (!handle) {
+		/* LCOV_EXCL_START */
 		ERR("handle is NULL");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	g_dbus_connection_signal_unsubscribe(handle->conn, handle->s_id);

@@ -64,8 +64,10 @@ static void _sig_to_viewer_handler_cb(void *data, GVariant *parameters)
 		event_arg_bundle = bundle_decode(serialized_arg,
 				serialized_arg_length);
 		if (event_arg_bundle == NULL) {
+			/* LCOV_EXCL_START */
 			ERR("fail to deserialize arguments");
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 
@@ -97,17 +99,21 @@ EXPORT_API int minicontrol_viewer_set_event_cb(
 				MINICTRL_DBUS_SIG_TO_VIEWER,
 				_sig_to_viewer_handler_cb, NULL);
 		if (!event_sh) {
+			/* LCOV_EXCL_START */
 			ERR("fail to _minictrl_dbus_sig_handle_attach - %s",
 					MINICTRL_DBUS_SIG_TO_VIEWER);
 			return MINICONTROL_ERROR_IPC_FAILURE;
+			/* LCOV_EXCL_STOP */
 		}
 
 		minicontrol_viewer_h =
 			malloc(sizeof(struct _minicontrol_viewer));
 		if (!minicontrol_viewer_h) {
+			/* LCOV_EXCL_START */
 			ERR("fail to alloc minicontrol_viewer_h");
 			_minictrl_dbus_sig_handle_dettach(event_sh);
 			return MINICONTROL_ERROR_OUT_OF_MEMORY;
+			/* LCOV_EXCL_STOP */
 		}
 
 		minicontrol_viewer_h->event_sh = event_sh;
@@ -137,6 +143,7 @@ EXPORT_API int minicontrol_viewer_unset_event_cb(void)
 	return MINICONTROL_ERROR_NONE;
 }
 
+/* LCOV_EXCL_START */
 static void _minictrl_plug_server_del(Ecore_Evas *ee)
 {
 	char *minicontrol_name = NULL;
@@ -161,6 +168,7 @@ static void _minictrl_plug_server_del(Ecore_Evas *ee)
 	_minictrl_provider_proc_send(MINICONTROL_DBUS_PROC_INCLUDE);
 	free(minicontrol_name);
 }
+/* LCOV_EXCL_STOP */
 
 static void _minictrl_plug_del(void *data, Evas *e, Evas_Object *obj,
 		void *event_info)
@@ -197,16 +205,20 @@ EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent,
 
 	plug = elm_plug_add(parent);
 	if (!plug) {
+		/* LCOV_EXCL_START */
 		ERR("fail to create plug");
 		set_last_result(MINICONTROL_ERROR_ELM_FAILURE);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (!elm_plug_connect(plug, minicontrol_name, 0, EINA_TRUE)) {
+		/* LCOV_EXCL_START */
 		ERR("Cannot connect plug[%s]", minicontrol_name);
 		set_last_result(MINICONTROL_ERROR_ELM_FAILURE);
 		evas_object_del(plug);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	plug_img = elm_plug_image_object_get(plug);
@@ -222,12 +234,15 @@ EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent,
 	return plug;
 }
 
+/* LCOV_EXCL_START */
 EXPORT_API Evas_Object *minicontrol_viewer_image_object_get(
 		const Evas_Object *obj)
 {
 	return elm_plug_image_object_get(obj);
 }
+/* LCOV_EXCL_STOP */
 
+/* LCOV_EXCL_START */
 EXPORT_API int minicontrol_viewer_request(const char *minicontrol_name,
 		minicontrol_request_e request, int value)
 {
@@ -257,4 +272,5 @@ EXPORT_API int minicontrol_viewer_request(const char *minicontrol_name,
 
 	return MINICONTROL_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
