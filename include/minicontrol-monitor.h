@@ -25,12 +25,9 @@
 extern "C" {
 #endif
 
-typedef void (*minicontrol_monitor_cb) (minicontrol_action_e action,
-					const char *name,
-					unsigned int width,
-					unsigned int height,
-					minicontrol_priority_e priority,
-					void *data);
+typedef void (*minicontrol_monitor_cb)(minicontrol_action_e action,
+		const char *name, unsigned int width, unsigned int height,
+		minicontrol_priority_e priority, void *data);
 
 int minicontrol_monitor_start(minicontrol_monitor_cb callback, void *data) DEPRECATED;
 

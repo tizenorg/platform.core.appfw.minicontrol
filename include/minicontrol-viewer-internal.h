@@ -22,3 +22,4 @@ int minicontrol_viewer_request(const char *appid, minicontrol_request_e request,
 Evas_Object *minicontrol_viewer_image_object_get(const Evas_Object *obj) DEPRECATED;
 
 #endif /* _MINICONTROL_VIEWER_INTERNAL_H_ */
+
