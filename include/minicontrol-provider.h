@@ -48,7 +48,7 @@ extern "C" {
  * @see #minicontrol_create_window
  * @see #minicontrol_viewer_event_e
  */
-typedef void (*minicontrol_event_cb) (minicontrol_viewer_event_e event_type, bundle *event_arg);
+typedef void (*minicontrol_event_cb)(minicontrol_viewer_event_e event_type, bundle *event_arg);
 
 /**
  * @brief Creates a window for minicontrol.
