@@ -17,10 +17,11 @@
 #ifndef _MINICTRL_INTERNAL_H_
 #define _MINICTRL_INTERNAL_H_
 
-#include <dbus/dbus.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <glib.h>
 #include <bundle.h>
+
 #include "minicontrol-type.h"
 
 #ifndef EXPORT_API
@@ -28,7 +29,6 @@
 #endif /* EXPORT_API */
 
 #define MINICTRL_DBUS_SIG_RUNNING_REQ "minicontrol_running_request"
-
 #define MINICTRL_DBUS_SIG_TO_PROVIDER "minicontrol_signal_to_provider"
 #define MINICTRL_DBUS_SIG_TO_VIEWER   "minicontrol_signal_to_viewer"
 
@@ -83,20 +83,21 @@ typedef enum {
 
 typedef struct _minictrl_sig_handle minictrl_sig_handle;
 
-int _minictrl_provider_message_send(int event, const char *minicontrol_name, unsigned int witdh, unsigned int height, minicontrol_priority_e priority);
+int _minictrl_provider_message_send(int event, const char *minicontrol_name,
+		unsigned int witdh, unsigned int height,
+		minicontrol_priority_e priority);
 
 int _minictrl_viewer_req_message_send(void);
 
 minictrl_sig_handle *_minictrl_dbus_sig_handle_attach(const char *signal,
-				void (*callback)(void *data, DBusMessage *msg),
-				void *data);
+		void (*callback)(void *data, GVariant *parameters), void *data);
 
 void _minictrl_dbus_sig_handle_dettach(minictrl_sig_handle *handle);
 
 int _minictrl_provider_proc_send(int type);
 
-/* new */
-int _minictrl_send_event(const char *signal_name, const char *minicontrol_name, int event, bundle *signal_arg);
+int _minictrl_send_event(const char *signal_name, const char *minicontrol_name,
+		int event, bundle *signal_arg);
 
 #endif /* _MINICTRL_INTERNAL_H_ */
 

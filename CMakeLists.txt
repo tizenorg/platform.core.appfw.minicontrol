@@ -35,9 +35,9 @@ pkg_check_modules(pkgs REQUIRED
 	elementary
 	evas
 	ecore-evas
-	dbus-1
-	dbus-glib-1
 	bundle
+	glib-2.0
+	gio-2.0
 )
 
 FOREACH(flag ${pkgs_CFLAGS})
