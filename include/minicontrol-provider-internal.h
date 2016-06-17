@@ -33,3 +33,4 @@ int minicontrol_request(Evas_Object *mincontrol, minicontrol_request_e request) 
 }
 #endif
 #endif /* _MINICONTROL_PROVIDER_INTERNAL_H_ */
+

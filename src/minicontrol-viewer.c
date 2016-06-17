@@ -31,9 +31,10 @@ struct _minicontrol_viewer {
 	void *user_data;
 };
 
-static struct _minicontrol_viewer *g_minicontrol_viewer_h = NULL;
+static struct _minicontrol_viewer *g_minicontrol_viewer_h;
 
-EXPORT_API int minicontrol_viewer_send_event(const char *minicontrol_name, minicontrol_viewer_event_e event, bundle *event_arg)
+EXPORT_API int minicontrol_viewer_send_event(const char *minicontrol_name,
+		minicontrol_viewer_event_e event, bundle *event_arg)
 {
 	int ret = MINICONTROL_ERROR_NONE;
 
@@ -42,11 +43,11 @@ EXPORT_API int minicontrol_viewer_send_event(const char *minicontrol_name, minic
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
 
-	ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_PROVIDER, minicontrol_name, event, event_arg);
+	ret = _minictrl_send_event(MINICTRL_DBUS_SIG_TO_PROVIDER,
+			minicontrol_name, event, event_arg);
 
 	return ret;
 }
-
 
 static void _sig_to_viewer_handler_cb(void *data, GVariant *parameters)
 {
@@ -78,8 +79,12 @@ static void _sig_to_viewer_handler_cb(void *data, GVariant *parameters)
 }
 
 
-EXPORT_API int minicontrol_viewer_set_event_cb(minicontrol_viewer_event_cb callback, void *data)
+EXPORT_API int minicontrol_viewer_set_event_cb(
+		minicontrol_viewer_event_cb callback, void *data)
 {
+	minictrl_sig_handle *event_sh;
+	struct _minicontrol_viewer *minicontrol_viewer_h;
+
 	if (!callback) {
 		ERR("MINICONTROL_ERROR_INVALID_PARAMETER");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
@@ -88,16 +93,17 @@ EXPORT_API int minicontrol_viewer_set_event_cb(minicontrol_viewer_event_cb callb
 	INFO("g_minicontrol_viewer_h [%p]", g_minicontrol_viewer_h);
 
 	if (g_minicontrol_viewer_h == NULL) {
-		minictrl_sig_handle *event_sh;
-		struct _minicontrol_viewer *minicontrol_viewer_h;
-
-		event_sh = _minictrl_dbus_sig_handle_attach(MINICTRL_DBUS_SIG_TO_VIEWER, _sig_to_viewer_handler_cb, NULL);
+		event_sh = _minictrl_dbus_sig_handle_attach(
+				MINICTRL_DBUS_SIG_TO_VIEWER,
+				_sig_to_viewer_handler_cb, NULL);
 		if (!event_sh) {
-			ERR("fail to _minictrl_dbus_sig_handle_attach - %s", MINICTRL_DBUS_SIG_TO_VIEWER);
+			ERR("fail to _minictrl_dbus_sig_handle_attach - %s",
+					MINICTRL_DBUS_SIG_TO_VIEWER);
 			return MINICONTROL_ERROR_IPC_FAILURE;
 		}
 
-		minicontrol_viewer_h = malloc(sizeof(struct _minicontrol_viewer));
+		minicontrol_viewer_h =
+			malloc(sizeof(struct _minicontrol_viewer));
 		if (!minicontrol_viewer_h) {
 			ERR("fail to alloc minicontrol_viewer_h");
 			_minictrl_dbus_sig_handle_dettach(event_sh);
@@ -120,8 +126,10 @@ EXPORT_API int minicontrol_viewer_unset_event_cb(void)
 	if (!g_minicontrol_viewer_h)
 		return MINICONTROL_ERROR_NONE;
 
-	if (g_minicontrol_viewer_h->event_sh)
-		_minictrl_dbus_sig_handle_dettach(g_minicontrol_viewer_h->event_sh);
+	if (g_minicontrol_viewer_h->event_sh) {
+		_minictrl_dbus_sig_handle_dettach(
+				g_minicontrol_viewer_h->event_sh);
+	}
 
 	free(g_minicontrol_viewer_h);
 	g_minicontrol_viewer_h = NULL;
@@ -141,33 +149,41 @@ static void _minictrl_plug_server_del(Ecore_Evas *ee)
 
 	INFO("server - %s is deleted", minicontrol_name);
 
-	/* To avoid retrying to free minicontrol_name again, set MINICTRL_PLUG_DATA_KEY as NULL */
+	/*
+	 * To avoid retrying to free minicontrol_name again,
+	 * set MINICTRL_PLUG_DATA_KEY as NULL
+	 */
 	ecore_evas_data_set(ee, MINICTRL_PLUG_DATA_KEY, NULL);
 
 	/* send message to remove plug */
-	_minictrl_provider_message_send(MINICONTROL_EVENT_STOP, minicontrol_name, 0, 0, MINICONTROL_PRIORITY_LOW);
+	_minictrl_provider_message_send(MINICONTROL_EVENT_STOP,
+			minicontrol_name, 0, 0, MINICONTROL_PRIORITY_LOW);
 	_minictrl_provider_proc_send(MINICONTROL_DBUS_PROC_INCLUDE);
 	free(minicontrol_name);
 }
 
-static void _minictrl_plug_del(void *data, Evas *e, Evas_Object *obj, void *event_info)
+static void _minictrl_plug_del(void *data, Evas *e, Evas_Object *obj,
+		void *event_info)
 {
 	Ecore_Evas *ee = data;
-	char *minicontrol_name = NULL;
+	char *minicontrol_name;
 
 	if (!ee)
 		return;
 
 	minicontrol_name = ecore_evas_data_get(ee, MINICTRL_PLUG_DATA_KEY);
-
 	if (minicontrol_name) {
-		/* Sending an event 'MINICONTROL_EVENT_REQUEST_HIDE' should be done by minicontrol viewer manually */
+		/*
+		 * Sending an event 'MINICONTROL_EVENT_REQUEST_HIDE'
+		 * should be done by minicontrol viewer manually
+		 */
 		free(minicontrol_name);
 		ecore_evas_data_set(ee, MINICTRL_PLUG_DATA_KEY, NULL);
 	}
 }
 
-EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent, const char *minicontrol_name)
+EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent,
+		const char *minicontrol_name)
 {
 	Evas_Object *plug = NULL;
 	Evas_Object *plug_img = NULL;
@@ -180,7 +196,6 @@ EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent, const char *
 	}
 
 	plug = elm_plug_add(parent);
-
 	if (!plug) {
 		ERR("fail to create plug");
 		set_last_result(MINICONTROL_ERROR_ELM_FAILURE);
@@ -197,63 +212,49 @@ EXPORT_API Evas_Object *minicontrol_viewer_add(Evas_Object *parent, const char *
 	plug_img = elm_plug_image_object_get(plug);
 
 	ee = ecore_evas_object_ecore_evas_get(plug_img);
-	ecore_evas_data_set(ee, MINICTRL_PLUG_DATA_KEY, strdup(minicontrol_name));
+	ecore_evas_data_set(ee, MINICTRL_PLUG_DATA_KEY,
+			strdup(minicontrol_name));
 	ecore_evas_callback_delete_request_set(ee, _minictrl_plug_server_del);
 
-	evas_object_event_callback_add(plug, EVAS_CALLBACK_DEL,	_minictrl_plug_del, ee);
+	evas_object_event_callback_add(plug, EVAS_CALLBACK_DEL,
+			_minictrl_plug_del, ee);
 
 	return plug;
 }
 
-EXPORT_API Evas_Object *minicontrol_viewer_image_object_get(const Evas_Object *obj)
+EXPORT_API Evas_Object *minicontrol_viewer_image_object_get(
+		const Evas_Object *obj)
 {
 	return elm_plug_image_object_get(obj);
 }
 
-EXPORT_API int minicontrol_viewer_request(const char *minicontrol_name, minicontrol_request_e request, int value)
+EXPORT_API int minicontrol_viewer_request(const char *minicontrol_name,
+		minicontrol_request_e request, int value)
 {
-	int ret = MINICONTROL_ERROR_NONE;
-	minicontrol_viewer_event_e event  = 0;
-	bundle *event_arg_bundle = NULL;
-	char bundle_value_buffer[BUNDLE_BUFFER_LENGTH] = { 0, };
+	minicontrol_viewer_event_e event = MINICONTROL_EVENT_REPORT_ANGLE;
+	bundle *event_arg_bundle;
+	char bundle_value_buffer[BUNDLE_BUFFER_LENGTH];
 
 	if (minicontrol_name == NULL) {
 		ERR("appid is NULL, invaild parameter");
 		return MINICONTROL_ERROR_INVALID_PARAMETER;
 	}
 
-	switch (request) {
-	case MINICONTROL_REQ_ROTATE_PROVIDER: {
-		event = MINICONTROL_EVENT_REPORT_ANGLE;
-		event_arg_bundle = bundle_create();
+	if (request != MINICONTROL_REQ_ROTATE_PROVIDER)
+		return MINICONTROL_ERROR_INVALID_PARAMETER;
 
-		if (event_arg_bundle == NULL) {
-			ERR("fail to create a bundle instance");
-			ret = MINICONTROL_ERROR_OUT_OF_MEMORY;
-			goto out;
-		}
-
-		snprintf(bundle_value_buffer, BUNDLE_BUFFER_LENGTH, "%d", value);
-
-		bundle_add_str(event_arg_bundle, "angle", bundle_value_buffer);
-		break;
-	}
-	case MINICONTROL_REQ_NONE:
-	case MINICONTROL_REQ_HIDE_VIEWER:
-	case MINICONTROL_REQ_FREEZE_SCROLL_VIEWER:
-	case MINICONTROL_REQ_UNFREEZE_SCROLL_VIEWER:
-	case MINICONTROL_REQ_REPORT_VIEWER_ANGLE:
-	default:
-		ret = MINICONTROL_ERROR_INVALID_PARAMETER;
-		goto out;
+	event_arg_bundle = bundle_create();
+	if (event_arg_bundle == NULL) {
+		ERR("fail to create a bundle instance");
+		return MINICONTROL_ERROR_OUT_OF_MEMORY;
 	}
 
-	_minictrl_send_event(MINICTRL_DBUS_SIG_TO_PROVIDER, minicontrol_name, event, event_arg_bundle);
+	snprintf(bundle_value_buffer, sizeof(bundle_value_buffer), "%d", value);
+	bundle_add_str(event_arg_bundle, "angle", bundle_value_buffer);
+	_minictrl_send_event(MINICTRL_DBUS_SIG_TO_PROVIDER, minicontrol_name,
+			event, event_arg_bundle);
+	bundle_free(event_arg_bundle);
 
-out:
-	if (event_arg_bundle)
-		bundle_free(event_arg_bundle);
-
-	return ret;
+	return MINICONTROL_ERROR_NONE;
 }
 

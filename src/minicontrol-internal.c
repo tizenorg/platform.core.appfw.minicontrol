@@ -85,20 +85,11 @@ int _minictrl_provider_proc_send(int type)
 {
 	int ret;
 	GVariant *param;
-	const char *type_str;
+	const char *type_str = PROC_DBUS_INCLUDE;
 	int pid = getpid();
 
-	switch (type) {
-	case MINICONTROL_DBUS_PROC_EXCLUDE:
+	if (type == MINICONTROL_DBUS_PROC_EXCLUDE)
 		type_str = PROC_DBUS_EXCLUDE;
-		break;
-	case MINICONTROL_DBUS_PROC_INCLUDE:
-		type_str = PROC_DBUS_INCLUDE;
-		break;
-	default:
-		ERR("Check unsupported type : %d", type);
-		return -1;
-	}
 
 	DBG("pid: %d, type: %d(%s)", pid, type, type_str);
 
